@@ -53,12 +53,12 @@
         datasets: [{
           label: "Delegation (" + partner.tokenSymbol + ")",
           data: values,
-          borderColor: "#f0883e",
-          backgroundColor: "rgba(240,136,62,0.08)",
+          borderColor: "#1d2939",
+          backgroundColor: "rgba(29,41,57,0.08)",
           fill: true,
           tension: 0.4,
           pointRadius: 4,
-          pointBackgroundColor: "#f0883e",
+          pointBackgroundColor: "#1d2939",
           pointBorderColor: "#fff",
           pointBorderWidth: 2,
           borderWidth: 2.5,
@@ -80,13 +80,13 @@
         scales: {
           x: {
             grid: { color: "rgba(0,0,0,0.04)" },
-            ticks: { color: "#667085", font: { family: "'Inter', sans-serif", size: 11 } },
+            ticks: { color: "#667085", font: { family: "'JetBrains Mono', monospace", size: 11 } },
           },
           y: {
             grid: { color: "rgba(0,0,0,0.04)" },
             ticks: {
               color: "#667085",
-              font: { family: "'Inter', sans-serif", size: 11 },
+              font: { family: "'JetBrains Mono', monospace", size: 11 },
               callback: (v) => formatNum(v),
             },
           },
@@ -112,9 +112,9 @@
         labels: labels,
         datasets: [{
           data: prices,
-          borderColor: "#f0883e",
+          borderColor: "#1d2939",
           borderWidth: 1.5,
-          backgroundColor: "rgba(240,136,62,0.06)",
+          backgroundColor: "rgba(29,41,57,0.06)",
           fill: true,
           tension: 0.4,
           pointRadius: 0,

@@ -19,26 +19,39 @@
         <canvas id="chart"></canvas>
       </div>
     </div>
-    <div class="panel panel-tiles">
-      <div class="panel-title">Delegation Change</div>
-      <div class="tile-grid" id="tile-grid"></div>
+    <div class="panel panel-tiles" id="delegation-panel">
+      <div class="panel-title panel-title-toggle" id="delegation-toggle">
+        <span>Delegation Change</span>
+        <span class="toggle-icon" id="toggle-icon">▼</span>
+      </div>
+      <div class="tile-grid-wrap" id="tile-grid-wrap">
+        <div class="tile-grid" id="tile-grid"></div>
+      </div>
     </div>
     <div class="panel panel-table">
+      <div class="search-bar-wrap">
+        <div class="spotlight-search">
+          <span class="search-icon">⌕</span>
+          <input type="text" id="partner-search" placeholder="Spotlight search" autocomplete="off" />
+        </div>
+      </div>
       <div class="panel-title">DSRV Validator Partners</div>
       <div class="table-wrap">
         <table id="main-table">
           <thead>
             <tr>
-              <th>Partner</th>
-              <th class="num">Delegation</th>
+              <th class="col-partner">Partner</th>
+              <th class="num col-delegation">Delegation</th>
               <th>Token</th>
-              <th class="num">Price (USD)</th>
+              <th class="num col-price-24h">
+                <span>Price (USD)</span>
+                <span class="sub-col">24h %</span>
+              </th>
               <th class="num">APR %</th>
               <th class="num">Commission %</th>
-              <th class="num">Annual Reward (USD)</th>
               <th class="num">Monthly Reward (USD)</th>
+              <th class="num">Annual Reward (USD)</th>
               <th class="num">AUM</th>
-              <th class="num">24h %</th>
               <th class="num">Uptime %</th>
               <th class="link-cell">Delegation · Uptime</th>
             </tr>

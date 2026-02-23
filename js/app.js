@@ -93,16 +93,15 @@ function renderTable(prices) {
       : "—";
     const partnerLink = '<a href="partner.html?name=' + encodeURIComponent(p.name) + '">' + escapeHtml(p.name) + '</a>';
     return (
-      "<tr><td>" + partnerLink +
+      "<tr data-partner-name=\"" + escapeHtml(p.name) + "\"><td>" + partnerLink +
       "</td><td class=\"num\">" + escapeHtml(String(del)) +
       "</td><td>" + escapeHtml(p.tokenSymbol) +
-      "</td><td class=\"num\">" + priceStr +
+      "</td><td class=\"num col-price-24h\"><span>" + priceStr + "</span>" + (changeStr !== "—" ? ' <span class="price-24h ' + changeClass + '">' + changeStr + '</span>' : '') +
       "</td><td class=\"num\">" + aprStr +
       "</td><td class=\"num\">" + commStr +
-      "</td><td class=\"num\">" + annualRewardStr +
       "</td><td class=\"num\">" + monthlyRewardStr +
+      "</td><td class=\"num\">" + annualRewardStr +
       "</td><td class=\"num\">" + aumStr +
-      "</td><td class=\"num " + changeClass + "\">" + changeStr +
       "</td><td class=\"num\">" + uptime +
       "</td><td class=\"link-cell\">" + linkDel + " · " + linkUp +
       "</td></tr>"
@@ -171,12 +170,12 @@ function drawChart(prices) {
       datasets: [{
         label: chartLabel,
         data: values,
-        borderColor: "#f0883e",
-        backgroundColor: "rgba(240,136,62,0.08)",
+        borderColor: "#1d2939",
+        backgroundColor: "rgba(29,41,57,0.08)",
         fill: true,
         tension: 0.4,
         pointRadius: 4,
-        pointBackgroundColor: "#f0883e",
+        pointBackgroundColor: "#1d2939",
         pointBorderColor: "#fff",
         pointBorderWidth: 2,
         borderWidth: 2.5,
@@ -198,13 +197,13 @@ function drawChart(prices) {
       scales: {
         x: {
           grid: { color: "rgba(0,0,0,0.04)" },
-          ticks: { color: "#667085", font: { family: "'Inter', sans-serif", size: 11 } },
+          ticks: { color: "#667085", font: { family: "'JetBrains Mono', monospace", size: 11 } },
         },
         y: {
           grid: { color: "rgba(0,0,0,0.04)" },
           ticks: {
             color: "#667085",
-            font: { family: "'Inter', sans-serif", size: 11 },
+            font: { family: "'JetBrains Mono', monospace", size: 11 },
             callback: (v) => yPrefix + formatNum(v),
           },
         },
@@ -241,8 +240,18 @@ function renderTiles() {
 
     const values = snaps.map((s) => s.delegations[p.name] ?? null);
 
-    const tile = document.createElement("div");
-    tile.className = "tile";
+    const tile = document.createElement("a");
+    tile.className = "tile tile-clickable";
+    tile.href = "partner.html?name=" + encodeURIComponent(p.name);
+    tile.title = "View " + p.name + " details";
+
+    const header = document.createElement("div");
+    header.className = "tile-header";
+    const nameEl = document.createElement("span");
+    nameEl.className = "tile-name";
+    nameEl.textContent = p.name;
+    header.appendChild(nameEl);
+    tile.appendChild(header);
 
     const chartDiv = document.createElement("div");
     chartDiv.className = "tile-chart";
@@ -264,17 +273,17 @@ function renderTiles() {
     }
     footer.appendChild(changeEl);
 
-    const tokenEl = document.createElement("span");
-    tokenEl.className = "tile-token";
-    tokenEl.textContent = p.tokenSymbol;
-    footer.appendChild(tokenEl);
+    const valueEl = document.createElement("span");
+    valueEl.className = "tile-value";
+    valueEl.textContent = formatNum(curVal) + " " + p.tokenSymbol;
+    footer.appendChild(valueEl);
 
     tile.appendChild(footer);
     grid.appendChild(tile);
 
     const isUp = pctChange != null && pctChange >= 0;
-    const lineColor = isUp ? "#f0883e" : "#f04438";
-    const fillColor = isUp ? "rgba(240,136,62,0.1)" : "rgba(240,68,56,0.08)";
+    const lineColor = isUp ? "#1d2939" : "#f04438";
+    const fillColor = isUp ? "rgba(29,41,57,0.12)" : "rgba(240,68,56,0.08)";
 
     const miniChart = new Chart(canvas, {
       type: "line",
@@ -369,6 +378,32 @@ function waitForChartJs() {
 
 function init() {
   renderTable(null);
+
+  // Delegation section toggle
+  const toggleBtn = document.getElementById("delegation-toggle");
+  const tileGridWrap = document.getElementById("tile-grid-wrap");
+  const toggleIcon = document.getElementById("toggle-icon");
+  if (toggleBtn && tileGridWrap) {
+    let isOpen = true;
+    toggleBtn.addEventListener("click", () => {
+      isOpen = !isOpen;
+      tileGridWrap.classList.toggle("collapsed", !isOpen);
+      if (toggleIcon) toggleIcon.textContent = isOpen ? "▼" : "▶";
+    });
+  }
+
+  // Spotlight search filter
+  const searchInput = document.getElementById("partner-search");
+  if (searchInput) {
+    searchInput.addEventListener("input", () => {
+      const q = searchInput.value.trim().toLowerCase();
+      const rows = document.querySelectorAll("#tbody tr");
+      rows.forEach((row) => {
+        const name = (row.getAttribute("data-partner-name") || "").toLowerCase();
+        row.style.display = !q || name.includes(q) ? "" : "none";
+      });
+    });
+  }
 
   Promise.all([loadHistory(), waitForChartJs()])
     .then(() => {
