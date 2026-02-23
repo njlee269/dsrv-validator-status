@@ -3,28 +3,28 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>DSRV Validator Status — Bloomberg Terminal</title>
+  <title>DSRV Validator Status</title>
   <link rel="stylesheet" href="css/styles.css" />
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 </head>
 <body>
   <header class="header">
-    <h1>DSRV Validator Status</h1>
-    <span class="meta">Data: <span id="data-time">—</span> | Prices: <span id="prices-loading">loading…</span> <span id="prices-updated"></span></span>
+    <h1><span class="accent">DSRV</span> Validator Status</h1>
+    <span class="meta">Data: <span id="data-time">—</span> &middot; Prices: <span id="prices-loading">loading…</span> <span id="prices-updated"></span></span>
   </header>
   <div class="layout-full">
     <div class="panel panel-aum">
-      <div class="panel-title">Total AUM by month (USD)</div>
+      <div class="panel-title">Total AUM by Month (USD)</div>
       <div class="chart-wrap">
         <canvas id="chart"></canvas>
       </div>
     </div>
     <div class="panel panel-tiles">
-      <div class="panel-title">Delegation change — month over month</div>
+      <div class="panel-title">Delegation Change — Month over Month</div>
       <div class="tile-grid" id="tile-grid"></div>
     </div>
     <div class="panel panel-table">
-      <div class="panel-title">DSRV validator partners</div>
+      <div class="panel-title">DSRV Validator Partners</div>
       <div class="table-wrap">
         <table id="main-table">
           <thead>

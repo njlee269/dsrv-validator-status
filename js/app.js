@@ -1,5 +1,5 @@
 /**
- * DSRV Validator Status — Bloomberg-style dashboard
+ * DSRV Validator Status — Dashboard
  * Depends: data.js (PARTNERS, DATA_DATE), Chart.js (global)
  */
 
@@ -122,10 +122,6 @@ function getTotalAum(prices) {
   return sum;
 }
 
-/**
- * Compute monthly AUM from history.json snapshots and current prices.
- * Uses current token prices applied to historical delegation amounts.
- */
 function drawChart(prices) {
   const ctx = document.getElementById("chart");
   if (!ctx || !window.Chart) return;
@@ -176,18 +172,42 @@ function drawChart(prices) {
         label: chartLabel,
         data: values,
         borderColor: "#f0883e",
-        backgroundColor: "rgba(240,136,62,0.15)",
+        backgroundColor: "rgba(240,136,62,0.08)",
         fill: true,
-        tension: 0.3,
+        tension: 0.4,
+        pointRadius: 4,
+        pointBackgroundColor: "#f0883e",
+        pointBorderColor: "#fff",
+        pointBorderWidth: 2,
+        borderWidth: 2.5,
       }],
     },
     options: {
       responsive: true,
       maintainAspectRatio: false,
-      plugins: { legend: { display: false } },
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          backgroundColor: "#1d2939",
+          titleColor: "#fff",
+          bodyColor: "#fff",
+          cornerRadius: 8,
+          padding: 10,
+        },
+      },
       scales: {
-        x: { grid: { color: "rgba(48,54,61,0.8)" }, ticks: { color: "#8b949e", maxTicksLimit: 7 } },
-        y: { grid: { color: "rgba(48,54,61,0.8)" }, ticks: { color: "#8b949e", callback: (v) => yPrefix + formatNum(v) } },
+        x: {
+          grid: { color: "rgba(0,0,0,0.04)" },
+          ticks: { color: "#667085", font: { family: "'Inter', sans-serif", size: 11 } },
+        },
+        y: {
+          grid: { color: "rgba(0,0,0,0.04)" },
+          ticks: {
+            color: "#667085",
+            font: { family: "'Inter', sans-serif", size: 11 },
+            callback: (v) => yPrefix + formatNum(v),
+          },
+        },
       },
     },
   });
@@ -252,12 +272,9 @@ function renderTiles() {
     tile.appendChild(footer);
     grid.appendChild(tile);
 
-    const lineColor = pctChange != null && pctChange >= 0
-      ? "rgba(240,136,62,0.9)"
-      : "rgba(248,81,73,0.8)";
-    const fillColor = pctChange != null && pctChange >= 0
-      ? "rgba(240,136,62,0.15)"
-      : "rgba(248,81,73,0.10)";
+    const isUp = pctChange != null && pctChange >= 0;
+    const lineColor = isUp ? "#f0883e" : "#f04438";
+    const fillColor = isUp ? "rgba(240,136,62,0.1)" : "rgba(240,68,56,0.08)";
 
     const miniChart = new Chart(canvas, {
       type: "line",
@@ -271,9 +288,10 @@ function renderTiles() {
           borderColor: lineColor,
           backgroundColor: fillColor,
           fill: true,
-          tension: 0.3,
-          borderWidth: 1.5,
-          pointRadius: 2,
+          tension: 0.4,
+          borderWidth: 2,
+          pointRadius: 0,
+          pointHoverRadius: 3,
           pointBackgroundColor: lineColor,
         }],
       },
@@ -321,7 +339,7 @@ function loadPrices() {
       if (pricesEl) pricesEl.textContent = "OK";
       const now = new Date();
       if (updatedEl)
-        updatedEl.textContent = "| Updated " + now.toLocaleTimeString();
+        updatedEl.textContent = "· Updated " + now.toLocaleTimeString();
       renderTable(prices);
       drawChart(prices);
     })

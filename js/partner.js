@@ -54,20 +54,42 @@
           label: "Delegation (" + partner.tokenSymbol + ")",
           data: values,
           borderColor: "#f0883e",
-          backgroundColor: "rgba(240,136,62,0.15)",
+          backgroundColor: "rgba(240,136,62,0.08)",
           fill: true,
-          tension: 0.3,
+          tension: 0.4,
           pointRadius: 4,
           pointBackgroundColor: "#f0883e",
+          pointBorderColor: "#fff",
+          pointBorderWidth: 2,
+          borderWidth: 2.5,
         }],
       },
       options: {
         responsive: true,
         maintainAspectRatio: false,
-        plugins: { legend: { display: false } },
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            backgroundColor: "#1d2939",
+            titleColor: "#fff",
+            bodyColor: "#fff",
+            cornerRadius: 8,
+            padding: 10,
+          },
+        },
         scales: {
-          x: { grid: { color: "rgba(48,54,61,0.8)" }, ticks: { color: "#8b949e" } },
-          y: { grid: { color: "rgba(48,54,61,0.8)" }, ticks: { color: "#8b949e", callback: (v) => formatNum(v) } },
+          x: {
+            grid: { color: "rgba(0,0,0,0.04)" },
+            ticks: { color: "#667085", font: { family: "'Inter', sans-serif", size: 11 } },
+          },
+          y: {
+            grid: { color: "rgba(0,0,0,0.04)" },
+            ticks: {
+              color: "#667085",
+              font: { family: "'Inter', sans-serif", size: 11 },
+              callback: (v) => formatNum(v),
+            },
+          },
         },
       },
     });
@@ -90,18 +112,27 @@
         labels: labels,
         datasets: [{
           data: prices,
-          borderColor: "#58a6ff",
+          borderColor: "#f0883e",
           borderWidth: 1.5,
-          backgroundColor: "rgba(88,166,255,0.08)",
+          backgroundColor: "rgba(240,136,62,0.06)",
           fill: true,
-          tension: 0.3,
+          tension: 0.4,
           pointRadius: 0,
         }],
       },
       options: {
         responsive: true,
         maintainAspectRatio: false,
-        plugins: { legend: { display: false }, tooltip: { enabled: true } },
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            backgroundColor: "#1d2939",
+            titleColor: "#fff",
+            bodyColor: "#fff",
+            cornerRadius: 6,
+            padding: 8,
+          },
+        },
         scales: {
           x: { display: false },
           y: { display: false },
@@ -215,7 +246,7 @@
       .then(([history, priceUsd, priceHistory]) => {
         if (pricesEl) pricesEl.textContent = priceUsd != null ? "OK" : "—";
         if (updatedEl && priceUsd != null)
-          updatedEl.textContent = "| Updated " + new Date().toLocaleTimeString();
+          updatedEl.textContent = "· Updated " + new Date().toLocaleTimeString();
 
         updateMetrics(priceUsd);
 
