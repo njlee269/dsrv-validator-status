@@ -26,73 +26,78 @@ function getPriceUsd(prices, p) {
   return price != null ? (price.usd ?? price) : null;
 }
 
+function computeRow(p, prices) {
+  const priceUsd = getPriceUsd(prices, p);
+  const aum = (p.delegationAmount != null && priceUsd != null) ? p.delegationAmount * priceUsd : null;
+  let annualRewardUsd = null;
+  if (p.delegationAmount != null && priceUsd != null && p.aprPercent != null && p.commissionPercent != null) {
+    annualRewardUsd = p.delegationAmount * priceUsd * (p.aprPercent / 100) * (p.commissionPercent / 100);
+  }
+  const monthlyRewardUsd = annualRewardUsd != null ? annualRewardUsd / 12 : null;
+  const change = (prices && p.coingeckoId && prices[p.coingeckoId]?.usd_24h_change != null)
+    ? prices[p.coingeckoId].usd_24h_change : null;
+  return { priceUsd, aum, annualRewardUsd, monthlyRewardUsd, change };
+}
+
 function renderTable(prices) {
   const tbody = document.getElementById("tbody");
   if (!tbody) return;
-  tbody.innerHTML = PARTNERS.map((p) => {
-    const del =
-      p.delegationAmount != null
-        ? formatNum(p.delegationAmount)
-        : (p.delegationNote || "—");
-    const priceUsd = getPriceUsd(prices, p);
-    const priceStr =
-      priceUsd != null
-        ? "$" +
-          priceUsd.toLocaleString(undefined, {
-            minimumFractionDigits: 2,
-            maximumFractionDigits: 6,
-          })
-        : "—";
-    const aprStr =
-      p.aprPercent != null ? p.aprPercent.toFixed(1) + "%" : "—";
-    const commStr =
-      p.commissionPercent != null ? p.commissionPercent.toFixed(1) + "%" : "—";
-    let annualRewardUsd = null;
-    if (
-      p.delegationAmount != null &&
-      priceUsd != null &&
-      p.aprPercent != null &&
-      p.commissionPercent != null
-    ) {
-      annualRewardUsd =
-        p.delegationAmount *
-        priceUsd *
-        (p.aprPercent / 100) *
-        (p.commissionPercent / 100);
+
+  const active = PARTNERS.filter((p) => p.delegationAmount != null);
+
+  const rows = active.map((p) => {
+    const r = computeRow(p, prices);
+    return { partner: p, ...r };
+  });
+
+  rows.sort((a, b) => {
+    if (a.annualRewardUsd != null && b.annualRewardUsd != null)
+      return b.annualRewardUsd - a.annualRewardUsd;
+    if (a.annualRewardUsd != null) return -1;
+    if (b.annualRewardUsd != null) return 1;
+    const aumA = a.aum || 0, aumB = b.aum || 0;
+    return aumB - aumA;
+  });
+
+  let html = "";
+  let thresholdInserted = false;
+  const THRESHOLD = 50000;
+
+  for (const row of rows) {
+    const p = row.partner;
+
+    if (!thresholdInserted && row.annualRewardUsd != null && row.annualRewardUsd < THRESHOLD) {
+      html += '<tr class="threshold-row"><td colspan="12"><span class="threshold-label">$50K annual threshold</span></td></tr>';
+      thresholdInserted = true;
     }
-    const annualRewardStr =
-      annualRewardUsd != null
-        ? "$" + annualRewardUsd.toLocaleString(undefined, { maximumFractionDigits: 0 })
-        : "—";
-    const monthlyRewardUsd = annualRewardUsd != null ? annualRewardUsd / 12 : null;
-    const monthlyRewardStr =
-      monthlyRewardUsd != null
-        ? "$" + monthlyRewardUsd.toLocaleString(undefined, { maximumFractionDigits: 0 })
-        : "—";
-    const aum =
-      p.delegationAmount != null && priceUsd != null
-        ? p.delegationAmount * priceUsd
-        : null;
-    const aumStr =
-      aum != null
-        ? "$" + formatNum(aum)
-        : "—";
-    const change =
-      prices && p.coingeckoId && prices[p.coingeckoId]?.usd_24h_change != null
-        ? prices[p.coingeckoId].usd_24h_change
-        : null;
-    const changeStr =
-      change != null ? (change >= 0 ? "+" : "") + change.toFixed(2) + "%" : "—";
-    const changeClass = change != null ? (change >= 0 ? "up" : "down") : "";
+    if (!thresholdInserted && row.annualRewardUsd == null) {
+      html += '<tr class="threshold-row"><td colspan="12"><span class="threshold-label">$50K annual threshold</span></td></tr>';
+      thresholdInserted = true;
+    }
+
+    const del = formatNum(p.delegationAmount);
+    const priceStr = row.priceUsd != null
+      ? "$" + row.priceUsd.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 6 })
+      : "—";
+    const aprStr = p.aprPercent != null ? p.aprPercent.toFixed(1) + "%" : "—";
+    const commStr = p.commissionPercent != null ? p.commissionPercent.toFixed(1) + "%" : "—";
+    const annualStr = row.annualRewardUsd != null
+      ? "$" + row.annualRewardUsd.toLocaleString(undefined, { maximumFractionDigits: 0 })
+      : "—";
+    const monthlyStr = row.monthlyRewardUsd != null
+      ? "$" + row.monthlyRewardUsd.toLocaleString(undefined, { maximumFractionDigits: 0 })
+      : "—";
+    const aumStr = row.aum != null ? "$" + formatNum(row.aum) : "—";
+    const changeStr = row.change != null ? (row.change >= 0 ? "+" : "") + row.change.toFixed(2) + "%" : "—";
+    const changeClass = row.change != null ? (row.change >= 0 ? "up" : "down") : "";
     const uptime = p.uptimePercent != null ? p.uptimePercent + "%" : "—";
     const linkDel = p.explorerDelegation
-      ? '<a href="' + p.explorerDelegation + '" target="_blank" rel="noopener">Delegation</a>'
-      : "—";
+      ? '<a href="' + p.explorerDelegation + '" target="_blank" rel="noopener">Delegation</a>' : "—";
     const linkUp = p.explorerUptime
-      ? '<a href="' + p.explorerUptime + '" target="_blank" rel="noopener">Uptime</a>'
-      : "—";
+      ? '<a href="' + p.explorerUptime + '" target="_blank" rel="noopener">Uptime</a>' : "—";
     const partnerLink = '<a href="partner.html?name=' + encodeURIComponent(p.name) + '">' + escapeHtml(p.name) + '</a>';
-    return (
+
+    html +=
       "<tr data-name=\"" + escapeHtml(p.name.toLowerCase()) + "\"><td>" + partnerLink +
       "</td><td class=\"num\">" + escapeHtml(String(del)) +
       "</td><td>" + escapeHtml(p.tokenSymbol) +
@@ -100,14 +105,15 @@ function renderTable(prices) {
       "</td><td class=\"num " + changeClass + "\">" + changeStr +
       "</td><td class=\"num\">" + aprStr +
       "</td><td class=\"num\">" + commStr +
-      "</td><td class=\"num\">" + monthlyRewardStr +
-      "</td><td class=\"num\">" + annualRewardStr +
+      "</td><td class=\"num\">" + monthlyStr +
+      "</td><td class=\"num\">" + annualStr +
       "</td><td class=\"num\">" + aumStr +
       "</td><td class=\"num\">" + uptime +
       "</td><td class=\"link-cell\">" + linkDel + " · " + linkUp +
-      "</td></tr>"
-    );
-  }).join("");
+      "</td></tr>";
+  }
+
+  tbody.innerHTML = html;
 }
 
 let chart = null;
@@ -264,11 +270,6 @@ function renderTiles() {
     header.appendChild(priceEl);
     tile.appendChild(header);
 
-    const delRow = document.createElement("div");
-    delRow.className = "tile-delegation";
-    delRow.textContent = formatNum(curVal) + " " + p.tokenSymbol;
-    tile.appendChild(delRow);
-
     const chartDiv = document.createElement("div");
     chartDiv.className = "tile-chart";
     const canvas = document.createElement("canvas");
@@ -344,6 +345,10 @@ function setupSearch() {
     const q = this.value.toLowerCase().trim();
     const rows = document.querySelectorAll("#tbody tr");
     rows.forEach((row) => {
+      if (row.classList.contains("threshold-row")) {
+        row.style.display = q ? "none" : "";
+        return;
+      }
       const name = row.getAttribute("data-name") || "";
       row.style.display = name.includes(q) ? "" : "none";
     });
@@ -356,10 +361,12 @@ function setupToggle() {
   const btn = document.getElementById("toggle-tiles");
   const wrapper = document.getElementById("tile-grid-wrapper");
   if (!btn || !wrapper) return;
-  btn.addEventListener("click", function () {
-    const isCollapsed = wrapper.classList.toggle("collapsed");
-    btn.textContent = isCollapsed ? "Show" : "Hide";
-    btn.setAttribute("aria-expanded", String(!isCollapsed));
+
+  btn.addEventListener("click", function (e) {
+    e.preventDefault();
+    e.stopPropagation();
+    const isHidden = wrapper.classList.toggle("collapsed");
+    this.textContent = isHidden ? "Show" : "Hide";
   });
 }
 

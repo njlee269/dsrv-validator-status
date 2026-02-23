@@ -132,6 +132,8 @@ body {
   color: var(--text-dim);
   cursor: pointer;
   transition: background 0.15s, color 0.15s;
+  -webkit-appearance: none;
+  appearance: none;
 }
 
 .toggle-btn:hover {
@@ -141,14 +143,10 @@ body {
 
 .tile-grid-wrapper {
   overflow: hidden;
-  transition: max-height 0.35s ease, opacity 0.25s ease;
-  max-height: 2000px;
-  opacity: 1;
 }
 
 .tile-grid-wrapper.collapsed {
-  max-height: 0;
-  opacity: 0;
+  display: none;
 }
 
 /* ── Search bar ── */
@@ -196,7 +194,7 @@ table {
 
 th,
 td {
-  padding: 9px 10px;
+  padding: 9px 8px;
   text-align: left;
   border-bottom: 1px solid var(--border);
   white-space: nowrap;
@@ -260,11 +258,34 @@ a:hover {
   font-size: 0.72rem;
 }
 
+/* ── Threshold separator row ── */
+
+.threshold-row td {
+  padding: 0;
+  height: 3px;
+  background: var(--red);
+  border-bottom: none;
+  position: relative;
+}
+
+.threshold-row td .threshold-label {
+  position: absolute;
+  right: 8px;
+  top: -10px;
+  font-size: 0.6rem;
+  font-weight: 700;
+  color: var(--red);
+  background: var(--panel);
+  padding: 0 6px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
 /* ── Delegation mini-tile grid ── */
 
 .tile-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  grid-template-columns: repeat(5, 1fr);
   gap: 10px;
   padding: 14px;
 }
@@ -308,7 +329,7 @@ a:hover {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  max-width: 60%;
+  max-width: 65%;
 }
 
 .tile-price {
@@ -316,15 +337,6 @@ a:hover {
   font-weight: 600;
   color: var(--text-dim);
   white-space: nowrap;
-}
-
-.tile-delegation {
-  font-size: 0.65rem;
-  color: var(--text-dim);
-  margin-bottom: 2px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
 }
 
 .tile-chart {
