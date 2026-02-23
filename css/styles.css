@@ -52,6 +52,97 @@ body {
   height: calc(100vh - 42px);
 }
 
+.layout-full {
+  display: flex;
+  flex-direction: column;
+  min-height: calc(100vh - 42px);
+}
+
+.panel-aum {
+  flex: 0 0 260px;
+}
+
+.panel-tiles {
+  flex: 0 0 auto;
+}
+
+.panel-table {
+  flex: 1;
+  min-height: 300px;
+  overflow: hidden;
+}
+
+/* ── Delegation mini-tile grid ── */
+
+.tile-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 0;
+  padding: 0;
+  overflow-x: auto;
+}
+
+.tile {
+  aspect-ratio: 1 / 1;
+  border: 1px solid var(--border);
+  background: var(--panel);
+  display: flex;
+  flex-direction: column;
+  padding: 6px;
+  position: relative;
+  min-width: 0;
+}
+
+.tile-chart {
+  flex: 1;
+  min-height: 0;
+  position: relative;
+}
+
+.tile-chart canvas {
+  width: 100% !important;
+  height: 100% !important;
+}
+
+.tile-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-top: 4px;
+  gap: 4px;
+}
+
+.tile-change {
+  font-size: 0.65rem;
+  font-weight: 700;
+  padding: 1px 4px;
+  border-radius: 2px;
+}
+
+.tile-change.up {
+  color: var(--green);
+  background: rgba(63, 185, 80, 0.12);
+}
+
+.tile-change.down {
+  color: var(--red);
+  background: rgba(248, 81, 73, 0.12);
+}
+
+.tile-change.neutral {
+  color: var(--text-dim);
+}
+
+.tile-token {
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: var(--text);
+  text-align: right;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
 .panel {
   border: 1px solid var(--border);
   margin: 0;
@@ -149,4 +240,77 @@ a:hover {
 #prices-loading {
   color: var(--text-dim);
   font-size: 0.65rem;
+}
+
+/* ── Partner detail page ── */
+
+.back-link {
+  color: var(--accent);
+  text-decoration: none;
+  font-size: 1.1rem;
+}
+
+.back-link:hover {
+  text-decoration: underline;
+}
+
+.sep {
+  color: var(--border);
+  margin: 0 6px;
+}
+
+.partner-layout {
+  display: flex;
+  flex-direction: column;
+  height: calc(100vh - 42px);
+}
+
+.partner-chart-panel {
+  flex: 0 0 280px;
+}
+
+.metric-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 0;
+}
+
+.metric-box {
+  border: 1px solid var(--border);
+  background: var(--panel);
+  padding: 16px 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+
+.metric-label {
+  font-size: 0.65rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--accent);
+}
+
+.metric-value {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--text);
+  line-height: 1;
+}
+
+.metric-sparkline {
+  width: 100%;
+  height: 50px;
+  margin-top: 4px;
+}
+
+.metric-sparkline canvas {
+  width: 100% !important;
+  height: 100% !important;
+}
+
+.partner-table-panel {
+  flex: 1;
+  min-height: 0;
 }

@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Partner Detail — DSRV Validator Status</title>
+  <link rel="stylesheet" href="css/styles.css" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+</head>
+<body>
+  <header class="header">
+    <h1><a href="index.html" class="back-link">&larr; Dashboard</a> <span class="sep">|</span> <span id="partner-name">Partner</span></h1>
+    <span class="meta">Prices: <span id="prices-loading">loading…</span> <span id="prices-updated"></span></span>
+  </header>
+
+  <div class="partner-layout">
+    <div class="panel partner-chart-panel">
+      <div class="panel-title">Delegation Amount by Month</div>
+      <div class="chart-wrap">
+        <canvas id="delegation-chart"></canvas>
+      </div>
+    </div>
+
+    <div class="metric-row">
+      <div class="metric-box">
+        <div class="metric-label">Token Price (USD)</div>
+        <div class="metric-value" id="m-price">—</div>
+        <div class="metric-sparkline"><canvas id="price-sparkline"></canvas></div>
+      </div>
+      <div class="metric-box">
+        <div class="metric-label">APR %</div>
+        <div class="metric-value" id="m-apr">—</div>
+      </div>
+      <div class="metric-box">
+        <div class="metric-label">Commission %</div>
+        <div class="metric-value" id="m-commission">—</div>
+      </div>
+      <div class="metric-box">
+        <div class="metric-label">Annual Reward (USD)</div>
+        <div class="metric-value" id="m-reward">—</div>
+      </div>
+      <div class="metric-box">
+        <div class="metric-label">Monthly Reward (USD)</div>
+        <div class="metric-value" id="m-monthly">—</div>
+      </div>
+      <div class="metric-box">
+        <div class="metric-label">AUM (USD)</div>
+        <div class="metric-value" id="m-aum">—</div>
+      </div>
+    </div>
+
+    <div class="panel partner-table-panel">
+      <div class="panel-title">Historical Delegation Data</div>
+      <div class="table-wrap">
+        <table id="history-table">
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th class="num">Delegation</th>
+              <th class="num">AUM (USD)</th>
+              <th class="num">Monthly Reward (USD)</th>
+            </tr>
+          </thead>
+          <tbody id="history-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/data.js"></script>
+  <script src="js/partner.js"></script>
+</body>
+</html>

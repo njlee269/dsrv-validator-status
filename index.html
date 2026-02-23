@@ -12,20 +12,18 @@
     <h1>DSRV Validator Status</h1>
     <span class="meta">Data: <span id="data-time">—</span> | Prices: <span id="prices-loading">loading…</span> <span id="prices-updated"></span></span>
   </header>
-  <div class="layout">
-    <div class="panel" style="grid-column: 1; grid-row: 1;">
+  <div class="layout-full">
+    <div class="panel panel-aum">
       <div class="panel-title">Total AUM by month (USD)</div>
       <div class="chart-wrap">
         <canvas id="chart"></canvas>
       </div>
     </div>
-    <div class="panel" style="grid-column: 2; grid-row: 1 / 3;">
-      <div class="panel-title">Quick ref — Explorer links</div>
-      <div class="table-wrap">
-        <p id="summary" class="no-data" style="padding: 8px; font-size: 0.7rem;"></p>
-      </div>
+    <div class="panel panel-tiles">
+      <div class="panel-title">Delegation change — month over month</div>
+      <div class="tile-grid" id="tile-grid"></div>
     </div>
-    <div class="panel" style="grid-column: 1; grid-row: 2;">
+    <div class="panel panel-table">
       <div class="panel-title">DSRV validator partners</div>
       <div class="table-wrap">
         <table id="main-table">
@@ -38,6 +36,7 @@
               <th class="num">APR %</th>
               <th class="num">Commission %</th>
               <th class="num">Annual Reward (USD)</th>
+              <th class="num">Monthly Reward (USD)</th>
               <th class="num">AUM</th>
               <th class="num">24h %</th>
               <th class="num">Uptime %</th>

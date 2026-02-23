@@ -41,8 +41,35 @@ Then open **http://localhost:8787**
 - **Prices and 24h %:** Yes. Fetched from CoinGecko on load and **every 5 minutes** (live refresh). The header shows “Updated HH:MM” when prices are fetched.
 - **Delegation, APR, Commission, Uptime:** No. These are static from `js/data.js`. Update that file (or a future backend) when you have new numbers from explorers.
 
-## Updating data
+## How to sync every 2 weeks
 
-Edit **`js/data.js`**: change `PARTNERS` (delegationAmount, aprPercent, commissionPercent, uptimePercent, explorer links). The dashboard recalculates Annual Reward, AUM, and the chart from prices and this data.
+Run the sync script from your Terminal to refresh prices, snapshot delegation data, and see a rewards summary:
 
-Price reference: [Finviz Crypto](https://finviz.com/crypto.ashx).
+```bash
+cd "/Users/dsrv/Desktop/dsrv validator status"
+node scripts/sync.js
+```
+
+**What the script does:**
+
+1. Fetches live token prices from CoinGecko for all partners
+2. Tries to auto-fetch delegation amounts for Cosmos-ecosystem chains (Celestia, Cosmos HUB, Osmosis, Axelar, etc.)
+3. Saves a new timestamped snapshot to `data/history.json`
+4. Prints a rewards summary table showing monthly reward and AUM per partner
+
+**After running the script:**
+
+- For partners marked "manual lookup needed", open their explorer link (shown in the output), find DSRV's validator, and update the `delegationAmount` in `js/data.js`
+- The AUM chart and delegation tiles on the dashboard will automatically reflect the new snapshot
+
+**Prerequisite:** Node.js must be installed. Check with `node --version`. If not installed:
+
+```bash
+brew install node
+```
+
+## Updating data manually
+
+Edit **`js/data.js`**: change `PARTNERS` (delegationAmount, aprPercent, commissionPercent, uptimePercent, explorer links). The dashboard recalculates Annual Reward, Monthly Reward, AUM, and the chart from prices and this data.
+
+Price reference: [CoinGecko](https://www.coingecko.com/), [CoinMarketCap](https://coinmarketcap.com/).
