@@ -10,11 +10,11 @@
 <body>
   <header class="header">
     <h1>DSRV Validator Status</h1>
-    <span class="meta">Data: <span id="data-time">—</span> | Prices: <span id="prices-loading">loading…</span></span>
+    <span class="meta">Data: <span id="data-time">—</span> | Prices: <span id="prices-loading">loading…</span> <span id="prices-updated"></span></span>
   </header>
   <div class="layout">
     <div class="panel" style="grid-column: 1; grid-row: 1;">
-      <div class="panel-title">Total delegation by month</div>
+      <div class="panel-title">Total AUM by month (USD)</div>
       <div class="chart-wrap">
         <canvas id="chart"></canvas>
       </div>
@@ -26,7 +26,7 @@
       </div>
     </div>
     <div class="panel" style="grid-column: 1; grid-row: 2;">
-      <div class="panel-title">Partners | Delegation | Token | Price | Change % | Uptime | Links</div>
+      <div class="panel-title">Partners | Delegation | Token | Price | APR % | Commission % | Annual Reward (USD) | AUM | 24h % | Uptime | Links</div>
       <div class="table-wrap">
         <table id="main-table">
           <thead>
@@ -35,6 +35,10 @@
               <th class="num">Delegation</th>
               <th>Token</th>
               <th class="num">Price (USD)</th>
+              <th class="num">APR %</th>
+              <th class="num">Commission %</th>
+              <th class="num">Annual Reward (USD)</th>
+              <th class="num">AUM</th>
               <th class="num">24h %</th>
               <th class="num">Uptime %</th>
               <th class="link-cell">Delegation · Uptime</th>

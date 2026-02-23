@@ -1,48 +1,48 @@
 # DSRV Validator Status Dashboard
 
-Bloomberg-terminal-style dashboard for DSRV validator partners: delegation amounts, token info, prices, 24h change (green/red), uptime, and explorer links.
+Bloomberg-terminal-style dashboard for DSRV validator partners: delegation, token, price, APR, commission, annual reward (USD), AUM, 24h % (green/red), uptime, and explorer links.
 
-## How to open (offline app)
+## How to open
 
-**Option 1 — Double-click (easiest)**  
-Open `index.html` in your browser (Chrome, Firefox, Safari, Edge).  
-- Table and chart work immediately.  
-- **Prices**: Load when you’re online (CoinGecko). When offline, price columns show "—".
-
-**Option 2 — Local server (optional)**  
-If you want to load external data from `data/validators.json` later, run a simple server from this folder:
+**Option 1 — Double-click**  
+Open `index.html` in your browser. Use a **local server** if scripts don’t load from `file://`:
 
 ```bash
-# Python 3
-python3 -m http.server 8080
-
-# or Node (npx)
-npx serve -p 8080
+cd "/Users/dsrv/Desktop/dsrv validator status"
+python3 -m http.server 8787
 ```
 
-Then open: **http://localhost:8080**
+Then open **http://localhost:8787**
+
+**Option 2 — Node**  
+`npx serve -p 8080` then open http://localhost:8080
 
 ## What’s in the dashboard
 
 | Column | Description |
 |--------|-------------|
 | **Partner** | Protocol name |
-| **Delegation** | Delegation amount (from your source table; search explorers for latest) |
-| **Token** | Token symbol per project |
-| **Price (USD)** | From CoinGecko when online |
+| **Delegation** | Delegation amount (tokens) |
+| **Token** | Token symbol |
+| **Price (USD)** | From CoinGecko (refreshed every 5 min) |
+| **APR %** | Staking APR — edit in `js/data.js` |
+| **Commission %** | DSRV’s commission rate — edit in `js/data.js` |
+| **Annual Reward (USD)** | `delegation × price × APR% × commission%` |
+| **AUM** | `delegation × price` (USD) |
 | **24h %** | 24h price change — **green** if up, **red** if down |
-| **Uptime %** | From explorers (fill in from each chain’s explorer) |
-| **Links** | **Delegation** = explorer page for delegation; **Uptime** = page that shows uptime clearly |
+| **Uptime %** | Fill from each chain’s explorer (see Uptime link; search DSRV) |
+| **Links** | Delegation and Uptime explorer pages |
 
-## Data and links
+- **Chart:** Total AUM by month (USD). Uses current AUM with placeholder monthly trend until you add real history.
+- **Uptime:** Not auto-fetched. Use the **Uptime** link for each chain, find DSRV’s validator, and set `uptimePercent` in `js/data.js`.
 
-- **Table data** is embedded in `index.html` so it works from `file://`.  
-- **Explorer links** point to each chain’s validator list; search for **DSRV** on that page for the exact validator.  
-- **Monthly chart** uses placeholder totals; replace with your own monthly delegation history in the script if you have it.
+## Is the table live?
 
-## Updating delegation / uptime / links
+- **Prices and 24h %:** Yes. Fetched from CoinGecko on load and **every 5 minutes** (live refresh). The header shows “Updated HH:MM” when prices are fetched.
+- **Delegation, APR, Commission, Uptime:** No. These are static from `js/data.js`. Update that file (or a future backend) when you have new numbers from explorers.
 
-1. Edit `data/validators.json` with new delegation amounts, uptime %, and URLs.  
-2. Sync the same changes into the `PARTNERS` array inside `index.html` (so the file-only open still works).
+## Updating data
+
+Edit **`js/data.js`**: change `PARTNERS` (delegationAmount, aprPercent, commissionPercent, uptimePercent, explorer links). The dashboard recalculates Annual Reward, AUM, and the chart from prices and this data.
 
 Price reference: [Finviz Crypto](https://finviz.com/crypto.ashx).

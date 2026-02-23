@@ -17,6 +17,12 @@ function escapeHtml(s) {
   return div.innerHTML;
 }
 
+function getPriceUsd(prices, p) {
+  if (!prices || !p.coingeckoId) return null;
+  const price = prices[p.coingeckoId];
+  return price != null ? (price.usd ?? price) : null;
+}
+
 function renderTable(prices) {
   const tbody = document.getElementById("tbody");
   if (!tbody) return;
@@ -25,17 +31,50 @@ function renderTable(prices) {
       p.delegationAmount != null
         ? formatNum(p.delegationAmount)
         : (p.delegationNote || "—");
-    const price = prices && p.coingeckoId && prices[p.coingeckoId];
+    const priceUsd = getPriceUsd(prices, p);
     const priceStr =
-      price != null
+      priceUsd != null
         ? "$" +
-          (price.usd ?? price).toLocaleString(undefined, {
+          priceUsd.toLocaleString(undefined, {
             minimumFractionDigits: 2,
             maximumFractionDigits: 6,
           })
         : "—";
+    const aprStr =
+      p.aprPercent != null ? p.aprPercent.toFixed(1) + "%" : "—";
+    const commStr =
+      p.commissionPercent != null ? p.commissionPercent.toFixed(1) + "%" : "—";
+    // Annual Reward (USD) = delegation * token price * (APR/100) * (commission/100)
+    let annualRewardUsd = null;
+    if (
+      p.delegationAmount != null &&
+      priceUsd != null &&
+      p.aprPercent != null &&
+      p.commissionPercent != null
+    ) {
+      annualRewardUsd =
+        p.delegationAmount *
+        priceUsd *
+        (p.aprPercent / 100) *
+        (p.commissionPercent / 100);
+    }
+    const annualRewardStr =
+      annualRewardUsd != null
+        ? "$" + annualRewardUsd.toLocaleString(undefined, { maximumFractionDigits: 0 })
+        : "—";
+    // AUM = delegation amount * token price
+    const aum =
+      p.delegationAmount != null && priceUsd != null
+        ? p.delegationAmount * priceUsd
+        : null;
+    const aumStr =
+      aum != null
+        ? "$" + formatNum(aum)
+        : "—";
     const change =
-      price != null && price.usd_24h_change != null ? price.usd_24h_change : null;
+      prices && p.coingeckoId && prices[p.coingeckoId]?.usd_24h_change != null
+        ? prices[p.coingeckoId].usd_24h_change
+        : null;
     const changeStr =
       change != null ? (change >= 0 ? "+" : "") + change.toFixed(2) + "%" : "—";
     const changeClass = change != null ? (change >= 0 ? "up" : "down") : "";
@@ -59,6 +98,14 @@ function renderTable(prices) {
       escapeHtml(p.tokenSymbol) +
       "</td><td class=\"num\">" +
       priceStr +
+      "</td><td class=\"num\">" +
+      aprStr +
+      "</td><td class=\"num\">" +
+      commStr +
+      "</td><td class=\"num\">" +
+      annualRewardStr +
+      "</td><td class=\"num\">" +
+      aumStr +
       "</td><td class=\"num " +
       changeClass +
       "\">" +
@@ -76,18 +123,22 @@ function renderTable(prices) {
 
 let chart = null;
 
-function drawChart() {
-  const total = PARTNERS.reduce((sum, p) => sum + (p.delegationAmount || 0), 0);
+/** Total AUM (USD) = sum of delegationAmount * price per partner. */
+function getTotalAum(prices) {
+  let sum = 0;
+  for (const p of PARTNERS) {
+    const priceUsd = getPriceUsd(prices, p);
+    if (p.delegationAmount != null && priceUsd != null)
+      sum += p.delegationAmount * priceUsd;
+  }
+  return sum;
+}
+
+function drawChart(prices) {
+  const totalAum = getTotalAum(prices);
   const months = ["Aug", "Sep", "Oct", "Nov", "Dec", "Jan", "Feb"];
-  const values = [
-    total * 0.82,
-    total * 0.88,
-    total * 0.91,
-    total * 0.94,
-    total * 0.97,
-    total * 0.99,
-    total,
-  ];
+  const factors = [0.82, 0.88, 0.91, 0.94, 0.97, 0.99, 1];
+  const values = factors.map((f) => totalAum * f);
   const ctx = document.getElementById("chart");
   if (!ctx || !window.Chart) return;
   if (chart) chart.destroy();
@@ -97,7 +148,7 @@ function drawChart() {
       labels: months,
       datasets: [
         {
-          label: "Total delegation (tokens)",
+          label: "Total AUM (USD)",
           data: values,
           borderColor: "#f0883e",
           backgroundColor: "rgba(240,136,62,0.15)",
@@ -119,37 +170,49 @@ function drawChart() {
         },
         y: {
           grid: { color: "rgba(48,54,61,0.8)" },
-          ticks: { color: "#8b949e", callback: (v) => formatNum(v) },
+          ticks: {
+            color: "#8b949e",
+            callback: (v) => "$" + formatNum(v),
+          },
         },
       },
     },
   });
 }
 
-function setSummary(total, withPrices) {
+function setSummary(total, totalAum, withPrices) {
   const summaryEl = document.getElementById("summary");
   if (!summaryEl) return;
-  summaryEl.innerHTML =
-    "Total delegation (numeric): " +
+  let msg =
+    "Total delegation: " +
     formatNum(total) +
     " tokens across " +
     PARTNERS.length +
-    " partners. " +
-    (withPrices ? "Prices from CoinGecko." : "Connect for live prices.");
+    " partners. ";
+  if (totalAum != null && !isNaN(totalAum))
+    msg += "Total AUM: $" + formatNum(totalAum) + ". ";
+  msg += withPrices ? "Prices from CoinGecko (refresh every 5 min). " : "Connect for live prices. ";
+  msg += "Uptime %: fill from explorer Uptime links (search DSRV on each page).";
+  summaryEl.innerHTML = msg;
 }
+
+const PRICE_REFRESH_MS = 5 * 60 * 1000; // 5 minutes
 
 function loadPrices() {
   const ids = [...new Set(PARTNERS.map((p) => p.coingeckoId).filter(Boolean))];
   const total = PARTNERS.reduce((s, p) => s + (p.delegationAmount || 0), 0);
   const dataTimeEl = document.getElementById("data-time");
   const pricesEl = document.getElementById("prices-loading");
+  const updatedEl = document.getElementById("prices-updated");
 
   if (dataTimeEl) dataTimeEl.textContent = DATA_DATE;
 
   if (ids.length === 0) {
     if (pricesEl) pricesEl.textContent = "—";
+    if (updatedEl) updatedEl.textContent = "";
     renderTable(null);
-    setSummary(total, false);
+    setSummary(total, null, false);
+    drawChart(null);
     return;
   }
 
@@ -161,19 +224,26 @@ function loadPrices() {
     .then((r) => r.json())
     .then((prices) => {
       if (pricesEl) pricesEl.textContent = "OK";
+      const now = new Date();
+      if (updatedEl)
+        updatedEl.textContent = "| Updated " + now.toLocaleTimeString();
       renderTable(prices);
-      setSummary(total, true);
+      const totalAum = getTotalAum(prices);
+      setSummary(total, totalAum, true);
+      drawChart(prices);
     })
     .catch(() => {
       if (pricesEl) pricesEl.textContent = "offline";
+      if (updatedEl) updatedEl.textContent = "";
       renderTable(null);
-      setSummary(total, false);
+      setSummary(total, null, false);
+      drawChart(null);
     });
 }
 
 function initChart() {
   if (window.Chart) {
-    drawChart();
+    drawChart(null);
   } else {
     setTimeout(initChart, 100);
   }
@@ -183,9 +253,11 @@ function initChart() {
 function init() {
   const total = PARTNERS.reduce((s, p) => s + (p.delegationAmount || 0), 0);
   renderTable(null);
-  setSummary(total, false);
+  setSummary(total, null, false);
   loadPrices();
   initChart();
+  // Live refresh: prices every 5 minutes (table + chart update)
+  setInterval(loadPrices, PRICE_REFRESH_MS);
 }
 
 if (document.readyState === "loading") {
