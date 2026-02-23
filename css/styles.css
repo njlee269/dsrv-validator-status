@@ -1,0 +1,152 @@
+:root {
+  --bg: #0d1117;
+  --panel: #161b22;
+  --border: #30363d;
+  --text: #e6edf3;
+  --text-dim: #8b949e;
+  --accent: #f0883e;
+  --green: #3fb950;
+  --red: #f85149;
+  --blue: #58a6ff;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: "Consolas", "Monaco", "SF Mono", monospace;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  overflow-x: auto;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 16px;
+  background: var(--panel);
+  border-bottom: 1px solid var(--border);
+}
+
+.header h1 {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--accent);
+  margin: 0;
+}
+
+.header .meta {
+  font-size: 0.75rem;
+  color: var(--text-dim);
+}
+
+.layout {
+  display: grid;
+  grid-template-columns: 1fr 380px;
+  grid-template-rows: 280px 1fr;
+  gap: 0;
+  height: calc(100vh - 42px);
+}
+
+.panel {
+  border: 1px solid var(--border);
+  margin: 0;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.panel-title {
+  padding: 6px 10px;
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--accent);
+  background: var(--panel);
+  border-bottom: 1px solid var(--border);
+}
+
+.chart-wrap {
+  flex: 1;
+  padding: 8px;
+  min-height: 0;
+}
+
+.chart-wrap canvas {
+  max-width: 100%;
+  max-height: 100%;
+}
+
+.table-wrap {
+  flex: 1;
+  overflow: auto;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.7rem;
+}
+
+th,
+td {
+  padding: 4px 8px;
+  text-align: left;
+  border-bottom: 1px solid var(--border);
+  white-space: nowrap;
+}
+
+th {
+  position: sticky;
+  top: 0;
+  background: var(--panel);
+  color: var(--accent);
+  font-weight: 600;
+  z-index: 1;
+}
+
+tr:hover td {
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.num {
+  text-align: right;
+}
+
+.up {
+  color: var(--green);
+}
+
+.down {
+  color: var(--red);
+}
+
+a {
+  color: var(--blue);
+  text-decoration: none;
+}
+
+a:hover {
+  text-decoration: underline;
+}
+
+.link-cell {
+  white-space: normal;
+}
+
+.link-cell a {
+  margin-right: 6px;
+}
+
+.no-data {
+  color: var(--text-dim);
+}
+
+#prices-loading {
+  color: var(--text-dim);
+  font-size: 0.65rem;
+}
