@@ -43,7 +43,7 @@ function renderTable(prices) {
   const tbody = document.getElementById("tbody");
   if (!tbody) return;
 
-  const active = PARTNERS.filter((p) => p.delegationAmount != null);
+  const active = PARTNERS.filter((p) => p.delegationAmount != null || p.delegationNote);
 
   const rows = active.map((p) => {
     const r = computeRow(p, prices);
@@ -75,7 +75,7 @@ function renderTable(prices) {
       thresholdInserted = true;
     }
 
-    const del = formatNum(p.delegationAmount);
+    const del = p.delegationAmount != null ? formatNum(p.delegationAmount) : (p.delegationNote || "—");
     const priceStr = row.priceUsd != null
       ? "$" + row.priceUsd.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 6 })
       : "—";

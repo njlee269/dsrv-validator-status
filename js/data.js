@@ -37,6 +37,9 @@ const PARTNERS = [
   { name: "IKA", delegationAmount: 62091780, tokenSymbol: "IKA", coingeckoId: "ika", aprPercent: null, commissionPercent: null, explorerDelegation: "https://ikascan.io/mainnet/operator/0x1070423a19ad7097768e8da8d1f2e36663f898bfaeb8325dbb643366bdbf8717", explorerUptime: "https://ikascan.io/mainnet/operator/0x1070423a19ad7097768e8da8d1f2e36663f898bfaeb8325dbb643366bdbf8717", uptimePercent: 100 },
   { name: "Mitosis", delegationAmount: 900001, tokenSymbol: "MITO", coingeckoId: "mitosis", aprPercent: null, commissionPercent: null, explorerDelegation: "https://app.mitosis.org/staking/validator/0xc0cccda718572b80d804214596a7bff1b96064b4", explorerUptime: "https://app.mitosis.org/staking/validator/0xc0cccda718572b80d804214596a7bff1b96064b4", uptimePercent: 100 },
   { name: "Namada", delegationAmount: 2257929, tokenSymbol: "NAM", coingeckoId: "namada", aprPercent: 14, commissionPercent: 8, explorerDelegation: "https://namada.valopers.com/validators/tnam1q9vjuxuwdv9muek3ekvvjfngyt973agg2c5c7hxp", explorerUptime: "https://namada.info/validators", uptimePercent: 100 },
+
+  // ── NaaS ──
+  { name: "Canton", delegationAmount: null, delegationNote: "NaaS", tokenSymbol: "CC", coingeckoId: "canton-network", aprPercent: null, commissionPercent: null, explorerDelegation: "https://www.cantonscan.com/party/dsrv-mainnetValidator-01%3A%3A1220e2f4abe1c5ca7e07464037fe7fefc839b7b8fea24985d0d2a2790fa72e3c13ac", explorerUptime: "https://www.cantonscan.com/party/dsrv-mainnetValidator-01%3A%3A1220e2f4abe1c5ca7e07464037fe7fefc839b7b8fea24985d0d2a2790fa72e3c13ac", uptimePercent: 100 },
 ];
 
 const DATA_DATE = "2026-02-23";
