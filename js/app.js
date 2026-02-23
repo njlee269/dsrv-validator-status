@@ -93,10 +93,11 @@ function renderTable(prices) {
       : "—";
     const partnerLink = '<a href="partner.html?name=' + encodeURIComponent(p.name) + '">' + escapeHtml(p.name) + '</a>';
     return (
-      "<tr data-partner-name=\"" + escapeHtml(p.name) + "\"><td>" + partnerLink +
+      "<tr data-name=\"" + escapeHtml(p.name.toLowerCase()) + "\"><td>" + partnerLink +
       "</td><td class=\"num\">" + escapeHtml(String(del)) +
       "</td><td>" + escapeHtml(p.tokenSymbol) +
-      "</td><td class=\"num col-price-24h\"><span>" + priceStr + "</span>" + (changeStr !== "—" ? ' <span class="price-24h ' + changeClass + '">' + changeStr + '</span>' : '') +
+      "</td><td class=\"num\">" + priceStr +
+      "</td><td class=\"num " + changeClass + "\">" + changeStr +
       "</td><td class=\"num\">" + aprStr +
       "</td><td class=\"num\">" + commStr +
       "</td><td class=\"num\">" + monthlyRewardStr +
@@ -170,12 +171,12 @@ function drawChart(prices) {
       datasets: [{
         label: chartLabel,
         data: values,
-        borderColor: "#1d2939",
-        backgroundColor: "rgba(29,41,57,0.08)",
+        borderColor: "#111111",
+        backgroundColor: "rgba(17,17,17,0.06)",
         fill: true,
         tension: 0.4,
         pointRadius: 4,
-        pointBackgroundColor: "#1d2939",
+        pointBackgroundColor: "#111111",
         pointBorderColor: "#fff",
         pointBorderWidth: 2,
         borderWidth: 2.5,
@@ -192,18 +193,20 @@ function drawChart(prices) {
           bodyColor: "#fff",
           cornerRadius: 8,
           padding: 10,
+          titleFont: { family: "'Source Code Pro', monospace" },
+          bodyFont: { family: "'Source Code Pro', monospace" },
         },
       },
       scales: {
         x: {
           grid: { color: "rgba(0,0,0,0.04)" },
-          ticks: { color: "#667085", font: { family: "'JetBrains Mono', monospace", size: 11 } },
+          ticks: { color: "#667085", font: { family: "'Source Code Pro', monospace", size: 11 } },
         },
         y: {
           grid: { color: "rgba(0,0,0,0.04)" },
           ticks: {
             color: "#667085",
-            font: { family: "'JetBrains Mono', monospace", size: 11 },
+            font: { family: "'Source Code Pro', monospace", size: 11 },
             callback: (v) => yPrefix + formatNum(v),
           },
         },
@@ -240,18 +243,31 @@ function renderTiles() {
 
     const values = snaps.map((s) => s.delegations[p.name] ?? null);
 
+    const priceUsd = getPriceUsd(latestPrices, p);
+    const priceStr = priceUsd != null
+      ? "$" + priceUsd.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 4 })
+      : "";
+
     const tile = document.createElement("a");
-    tile.className = "tile tile-clickable";
+    tile.className = "tile";
     tile.href = "partner.html?name=" + encodeURIComponent(p.name);
-    tile.title = "View " + p.name + " details";
 
     const header = document.createElement("div");
     header.className = "tile-header";
     const nameEl = document.createElement("span");
     nameEl.className = "tile-name";
     nameEl.textContent = p.name;
+    const priceEl = document.createElement("span");
+    priceEl.className = "tile-price";
+    priceEl.textContent = priceStr;
     header.appendChild(nameEl);
+    header.appendChild(priceEl);
     tile.appendChild(header);
+
+    const delRow = document.createElement("div");
+    delRow.className = "tile-delegation";
+    delRow.textContent = formatNum(curVal) + " " + p.tokenSymbol;
+    tile.appendChild(delRow);
 
     const chartDiv = document.createElement("div");
     chartDiv.className = "tile-chart";
@@ -273,17 +289,17 @@ function renderTiles() {
     }
     footer.appendChild(changeEl);
 
-    const valueEl = document.createElement("span");
-    valueEl.className = "tile-value";
-    valueEl.textContent = formatNum(curVal) + " " + p.tokenSymbol;
-    footer.appendChild(valueEl);
+    const tokenEl = document.createElement("span");
+    tokenEl.className = "tile-token";
+    tokenEl.textContent = p.tokenSymbol;
+    footer.appendChild(tokenEl);
 
     tile.appendChild(footer);
     grid.appendChild(tile);
 
     const isUp = pctChange != null && pctChange >= 0;
-    const lineColor = isUp ? "#1d2939" : "#f04438";
-    const fillColor = isUp ? "rgba(29,41,57,0.12)" : "rgba(240,68,56,0.08)";
+    const lineColor = isUp ? "#12b76a" : "#f04438";
+    const fillColor = isUp ? "rgba(18,183,106,0.12)" : "rgba(240,68,56,0.10)";
 
     const miniChart = new Chart(canvas, {
       type: "line",
@@ -298,7 +314,7 @@ function renderTiles() {
           backgroundColor: fillColor,
           fill: true,
           tension: 0.4,
-          borderWidth: 2,
+          borderWidth: 1.5,
           pointRadius: 0,
           pointHoverRadius: 3,
           pointBackgroundColor: lineColor,
@@ -317,6 +333,34 @@ function renderTiles() {
     });
     tileCharts.push(miniChart);
   }
+}
+
+/* ── Search filter ── */
+
+function setupSearch() {
+  const input = document.getElementById("partner-search");
+  if (!input) return;
+  input.addEventListener("input", function () {
+    const q = this.value.toLowerCase().trim();
+    const rows = document.querySelectorAll("#tbody tr");
+    rows.forEach((row) => {
+      const name = row.getAttribute("data-name") || "";
+      row.style.display = name.includes(q) ? "" : "none";
+    });
+  });
+}
+
+/* ── Toggle delegation section ── */
+
+function setupToggle() {
+  const btn = document.getElementById("toggle-tiles");
+  const wrapper = document.getElementById("tile-grid-wrapper");
+  if (!btn || !wrapper) return;
+  btn.addEventListener("click", function () {
+    const isCollapsed = wrapper.classList.toggle("collapsed");
+    btn.textContent = isCollapsed ? "Show" : "Hide";
+    btn.setAttribute("aria-expanded", String(!isCollapsed));
+  });
 }
 
 const PRICE_REFRESH_MS = 5 * 60 * 1000;
@@ -351,6 +395,7 @@ function loadPrices() {
         updatedEl.textContent = "· Updated " + now.toLocaleTimeString();
       renderTable(prices);
       drawChart(prices);
+      renderTiles();
     })
     .catch(() => {
       if (pricesEl) pricesEl.textContent = "offline";
@@ -378,32 +423,8 @@ function waitForChartJs() {
 
 function init() {
   renderTable(null);
-
-  // Delegation section toggle
-  const toggleBtn = document.getElementById("delegation-toggle");
-  const tileGridWrap = document.getElementById("tile-grid-wrap");
-  const toggleIcon = document.getElementById("toggle-icon");
-  if (toggleBtn && tileGridWrap) {
-    let isOpen = true;
-    toggleBtn.addEventListener("click", () => {
-      isOpen = !isOpen;
-      tileGridWrap.classList.toggle("collapsed", !isOpen);
-      if (toggleIcon) toggleIcon.textContent = isOpen ? "▼" : "▶";
-    });
-  }
-
-  // Spotlight search filter
-  const searchInput = document.getElementById("partner-search");
-  if (searchInput) {
-    searchInput.addEventListener("input", () => {
-      const q = searchInput.value.trim().toLowerCase();
-      const rows = document.querySelectorAll("#tbody tr");
-      rows.forEach((row) => {
-        const name = (row.getAttribute("data-partner-name") || "").toLowerCase();
-        row.style.display = !q || name.includes(q) ? "" : "none";
-      });
-    });
-  }
+  setupSearch();
+  setupToggle();
 
   Promise.all([loadHistory(), waitForChartJs()])
     .then(() => {
