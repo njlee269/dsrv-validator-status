@@ -38,8 +38,8 @@ const PARTNERS = [
   { name: "Mitosis", delegationAmount: 900001, tokenSymbol: "MITO", coingeckoId: "mitosis", aprPercent: 0, commissionPercent: 0, explorerDelegation: "https://app.mitosis.org/staking/validator/0xc0cccda718572b80d804214596a7bff1b96064b4", explorerUptime: "https://app.mitosis.org/staking/validator/0xc0cccda718572b80d804214596a7bff1b96064b4", uptimePercent: 0 },
   { name: "Namada", delegationAmount: 2257929, tokenSymbol: "NAM", coingeckoId: "namada", aprPercent: 14, commissionPercent: 8, explorerDelegation: "https://namada.valopers.com/validators/tnam1q9vjuxuwdv9muek3ekvvjfngyt973agg2c5c7hxp", explorerUptime: "https://namada.info/validators", uptimePercent: 100 },
 
-  // ── NaaS ──
-  { name: "Canton", delegationAmount: null, delegationNote: "NaaS", tokenSymbol: "CC", coingeckoId: "canton-network", aprPercent: null, commissionPercent: null, explorerDelegation: "https://www.cantonscan.com/party/dsrv-mainnetValidator-01%3A%3A1220e2f4abe1c5ca7e07464037fe7fefc839b7b8fea24985d0d2a2790fa72e3c13ac", explorerUptime: "https://www.cantonscan.com/party/dsrv-mainnetValidator-01%3A%3A1220e2f4abe1c5ca7e07464037fe7fefc839b7b8fea24985d0d2a2790fa72e3c13ac", uptimePercent: 100 },
+  // ── NaaS — Canton earns flat ~64,895 CC/month via validator + app rewards, not a % yield ──
+  { name: "Canton", delegationAmount: 507604, delegationNote: "NaaS", tokenSymbol: "CC", coingeckoId: "canton-network", aprPercent: null, commissionPercent: null, explorerDelegation: "https://ccview.io/validators/dsrv-mainnetValidator-01::1220e2f4abe1c5ca7e07464037fe7fefc839b7b8fea24985d0d2a2790fa72e3c13ac/?table=rewards", explorerUptime: "https://ccview.io/validators/dsrv-mainnetValidator-01::1220e2f4abe1c5ca7e07464037fe7fefc839b7b8fea24985d0d2a2790fa72e3c13ac/", monthlyRewardCC: 64895, rewardCapture: 98.02, uptimePercent: 89.83 },
 ];
 
 const DATA_DATE = "2026-02-23";

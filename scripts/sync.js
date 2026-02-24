@@ -6,10 +6,9 @@
  *
  * What it does:
  *   1. Fetches live token prices from CoinGecko
- *   2. Queries Mintscan REST API for Cosmos-ecosystem validator delegation amounts
- *   3. Queries other chain-specific APIs where available
- *   4. Appends a new snapshot to data/history.json
- *   5. Prints a summary + CSV of rewards at current prices
+ *   2. Queries Cosmos LCD APIs for validator delegation amounts
+ *   3. Appends a new snapshot to data/history.json
+ *   4. Prints a summary + CSV of rewards at current prices
  *
  * Chains that require manual lookup are flagged in the output.
  */
@@ -21,8 +20,6 @@ const https = require("https");
 const ROOT = path.resolve(__dirname, "..");
 const HISTORY_PATH = path.join(ROOT, "data", "history.json");
 const DATA_JS_PATH = path.join(ROOT, "js", "data.js");
-
-// ── Helpers ──
 
 function httpGet(url) {
   return new Promise((resolve, reject) => {
@@ -44,16 +41,12 @@ function httpGet(url) {
 
 function sleep(ms) { return new Promise((r) => setTimeout(r, ms)); }
 
-// ── Parse PARTNERS from data.js (cheap text extraction) ──
-
 function loadPartners() {
   const src = fs.readFileSync(DATA_JS_PATH, "utf8");
   const match = src.match(/const PARTNERS\s*=\s*(\[[\s\S]*?\n\];)/);
   if (!match) throw new Error("Could not parse PARTNERS from data.js");
   return eval(match[1]);
 }
-
-// ── CoinGecko price fetch ──
 
 async function fetchPrices(ids) {
   const url =
@@ -63,38 +56,23 @@ async function fetchPrices(ids) {
   return httpGet(url);
 }
 
-// ── Mintscan Cosmos validator delegation ──
-// Mintscan v2 API: GET /v2/{chain}/validators/{valoper}
-// Falls back to chain LCD endpoints
-
-const MINTSCAN_VALIDATORS = {
-  "Babylon":     { chain: "babylon",     valoper: "bbnvaloper18hly9zagjfuzzeqp92uhwafmplmtgd0u98vjj3" },
-  "Celestia":    { chain: "celestia",    valoper: "celestiavaloper1vje2he3pcq3w5udyvla7zm9qd5yes6hzffsjxj" },
-  "Cosmos HUB":  { chain: "cosmos",      valoper: "cosmosvaloper1wlagucxdxvsmvj6330864x8q3vxz4x02rmvmsu" },
-  "Osmosis":     { chain: "osmosis",     valoper: "osmovaloper1wlagucxdxvsmvj6330864x8q3vxz4x025rraa6" },
-  "Axelar":      { chain: "axelar",      valoper: "axelarvaloper137nzwehjcjxddsanmsmg29p729cm4dghj08clr" },
-  "Shentu":      { chain: "shentu",      valoper: "shentuvaloper1vgpzxfmw8up2gugglj50t2uddlpd5shdu49c8g" },
-  "Archway":     { chain: "archway",     valoper: "archwayvaloper1zttnm2cl60m5ffsrfeqtzkmtvepl4hwndvgtka" },
-  "Agoric":      { chain: "agoric",      valoper: "agoricvaloper1wlagucxdxvsmvj6330864x8q3vxz4x02y2fcsc" },
-  "Persistence": { chain: "persistence", valoper: "persistencevaloper1d0xdy0v97grs8ru8nccqyzyc9l8ppv0zv6p5xg" },
-  "XPLA":        { chain: "xpla",        valoper: "xplavaloper18nwzp4g297pvq9kv6exzrlwx23tqpsfxnp3yyd" },
-  "Chihuahua":   { chain: "chihuahua",   valoper: "chihuahuavaloper128jw67hyqd02zxeqeqzy4dzfx67g3dplwqlqjl" },
-  "Zeta":        { chain: "zeta",        valoper: "zetavaloper1txfmxp4d9dc9wqa2f7wvqed9635zajn0hrmz8z" },
-  "Xion":        { chain: "xion",        valoper: "xionvaloper1ddqn26gh4kqeta6h7mcpt6sf0ww5r2kclajve5" },
-  "Provenance (Figure)": { chain: "provenance", valoper: "pbvaloper1s9f4e20xtqrk9tdfhhpavrf26cqjr4eyt3yjqg" },
-  "AtomOne":     { chain: "atomone",     valoper: "atonevaloper1wlagucxdxvsmvj6330864x8q3vxz4x022j0qq0" },
+// Cosmos LCD endpoints for auto-fetching delegation amounts
+const COSMOS_VALIDATORS = {
+  "Babylon":                { chain: "babylon",     valoper: "bbnvaloper18hly9zagjfuzzeqp92uhwafmplmtgd0u98vjj3" },
+  "Celestia":               { chain: "celestia",    valoper: "celestiavaloper1vje2he3pcq3w5udyvla7zm9qd5yes6hzffsjxj" },
+  "Cosmos HUB":             { chain: "cosmos",      valoper: "cosmosvaloper1wlagucxdxvsmvj6330864x8q3vxz4x02rmvmsu" },
+  "Osmosis":                { chain: "osmosis",     valoper: "osmovaloper1wlagucxdxvsmvj6330864x8q3vxz4x025rraa6" },
+  "Axelar":                 { chain: "axelar",      valoper: "axelarvaloper137nzwehjcjxddsanmsmg29p729cm4dghj08clr" },
+  "Shentu":                 { chain: "shentu",      valoper: "shentuvaloper1vgpzxfmw8up2gugglj50t2uddlpd5shdu49c8g" },
+  "Provenance (Figure)":    { chain: "provenance",  valoper: "pbvaloper1s9f4e20xtqrk9tdfhhpavrf26cqjr4eyt3yjqg" },
 };
 
-// LCD endpoints for Cosmos chains (staking/validators/{valoper})
 const LCD_ENDPOINTS = {
   "cosmos":      "https://lcd-cosmos.cosmostation.io",
   "osmosis":     "https://lcd-osmosis.cosmostation.io",
   "celestia":    "https://lcd-celestia.cosmostation.io",
   "axelar":      "https://lcd-axelar.cosmostation.io",
   "shentu":      "https://lcd-shentu.cosmostation.io",
-  "persistence": "https://lcd-persistence.cosmostation.io",
-  "archway":     "https://lcd-archway.cosmostation.io",
-  "agoric":      "https://lcd-agoric.cosmostation.io",
   "provenance":  "https://lcd-provenance.cosmostation.io",
 };
 
@@ -112,7 +90,28 @@ async function fetchCosmosDelegation(chain, valoper) {
   }
 }
 
-// ── Main ──
+// Manual lookup links for non-Cosmos chains
+const MANUAL_LOOKUP = {
+  "Etherfi (total)": "https://explorer.rated.network/o/DSRV%20-%20Ether.Fi?network=mainnet&timeWindow=1d&idType=poolShare",
+  "Lido (total)":    "https://explorer.rated.network/o/DSRV%20-%20Lido?network=mainnet&timeWindow=1d&idType=poolShare",
+  "Swell":           "https://explorer.rated.network/o/DSRV%20-%20Swell?network=mainnet&timeWindow=1d&idType=poolShare",
+  "Solana":          "https://stakewiz.com/validator/2mxWiqtwdpE8zgkWxwFaJLn127dbuuHY4D32d8A6UnPL",
+  "Sui":             "https://suivision.xyz/validator/0x6f4e73ee97bfae95e054d31dff1361a839aaadf2cfdb873ad2b07d479507905a",
+  "Aptos (total)":   "https://explorer.aptoslabs.com/validator/0xee36c1068076b199cf537bf652b1e586216a7dfb7c3447ff40333c971717eee6?network=mainnet",
+  "Near":            "https://nearscope.net/validator/dsrvlabs.poolv1.near/tab/dashboard",
+  "Monad":           "https://monadvision.com/validators  (search DSRV)",
+  "Supra":           "https://suprascan.io/address/0x4394f0b524832e01a6ffce798eee9b13ff5fd2a6bd11f9c57de908746faf94e8/f?tab=resources",
+  "0G":              "https://explorer.0g.ai/mainnet/validators/0x7840481938247e47db1488c033e8d18a21c85cfd/delegators",
+  "IOTA":            "https://iotascan.com/mainnet/validator/0xb7c4b7a63c1dd642d2d220630ca3ebf028c7a9ce8308a61bea75c169d21d611b/info",
+  "Story":           "https://story.explorers.guru/validator/storyvaloper1pjhn2l646wdphwjw4jkumsa4w4jsezu7nth4dm",
+  "Plume":           "https://staking.plume.org/",
+  "Polygon":         "https://staking.polygon.technology/validators/64",
+  "Wemix":           "https://wemixstake.com/ko/staking/wonder",
+  "IKA":             "https://ikascan.io/mainnet/operator/0x1070423a19ad7097768e8da8d1f2e36663f898bfaeb8325dbb643366bdbf8717",
+  "Mitosis":         "https://app.mitosis.org/staking/validator/0xc0cccda718572b80d804214596a7bff1b96064b4",
+  "Namada":          "https://namada.valopers.com/validators/tnam1q9vjuxuwdv9muek3ekvvjfngyt973agg2c5c7hxp",
+  "Canton":          "https://ccview.io/validators/dsrv-mainnetValidator-01::1220e2f4abe1c5ca7e07464037fe7fefc839b7b8fea24985d0d2a2790fa72e3c13ac/?table=rewards",
+};
 
 async function main() {
   console.log("═══════════════════════════════════════════");
@@ -134,10 +133,10 @@ async function main() {
     console.log("  ✗ Price fetch failed:", e.message, "\n");
   }
 
-  // 2. Fetch Cosmos validator delegations
+  // 2. Auto-fetch Cosmos validator delegations via LCD
   console.log("Fetching Cosmos-ecosystem validator delegations...");
   const autoFetched = {};
-  for (const [name, { chain, valoper }] of Object.entries(MINTSCAN_VALIDATORS)) {
+  for (const [name, { chain, valoper }] of Object.entries(COSMOS_VALIDATORS)) {
     const amount = await fetchCosmosDelegation(chain, valoper);
     if (amount != null) {
       autoFetched[name] = amount;
@@ -240,8 +239,15 @@ async function main() {
   if (manualNeeded.length > 0) {
     console.log("\n⚠  Manual lookup needed for:");
     for (const name of manualNeeded) {
-      const p = partners.find((x) => x.name === name);
-      console.log(`   • ${name} → ${p?.explorerDelegation || "no link"}`);
+      const link = MANUAL_LOOKUP[name] || "no link";
+      console.log(`   • ${name} → ${link}`);
+    }
+  }
+
+  console.log("\n📋 Non-Cosmos chains (always manual):");
+  for (const p of partners) {
+    if (!COSMOS_VALIDATORS[p.name] && MANUAL_LOOKUP[p.name]) {
+      console.log(`   • ${p.name} → ${MANUAL_LOOKUP[p.name]}`);
     }
   }
 

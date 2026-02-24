@@ -3,7 +3,7 @@
     {
       "date": "2025-08-01",
       "delegations": {
-        "Canton": null,
+        "Canton": 118234,
         "Etherfi (total)": 236396,
         "Lido (total)": 204541,
         "Solana": 20486,
@@ -56,7 +56,7 @@
     {
       "date": "2025-09-01",
       "delegations": {
-        "Canton": null,
+        "Canton": 183129,
         "Etherfi (total)": 253533,
         "Lido (total)": 219507,
         "Solana": 21985,
@@ -109,7 +109,7 @@
     {
       "date": "2025-10-01",
       "delegations": {
-        "Canton": null,
+        "Canton": 248024,
         "Etherfi (total)": 262342,
         "Lido (total)": 227130,
         "Solana": 22735,
@@ -162,7 +162,7 @@
     {
       "date": "2025-11-01",
       "delegations": {
-        "Canton": null,
+        "Canton": 312919,
         "Etherfi (total)": 270991,
         "Lido (total)": 234634,
         "Solana": 23485,
@@ -215,7 +215,7 @@
     {
       "date": "2025-12-01",
       "delegations": {
-        "Canton": null,
+        "Canton": 377814,
         "Etherfi (total)": 279639,
         "Lido (total)": 242117,
         "Solana": 24234,
@@ -268,7 +268,7 @@
     {
       "date": "2026-01-01",
       "delegations": {
-        "Canton": null,
+        "Canton": 442709,
         "Etherfi (total)": 284005,
         "Lido (total)": 245946,
         "Solana": 24613,
@@ -321,7 +321,7 @@
     {
       "date": "2026-02-01",
       "delegations": {
-        "Canton": null,
+        "Canton": 507604,
         "Etherfi (total)": 288288,
         "Lido (total)": 249440,
         "Solana": 24983,

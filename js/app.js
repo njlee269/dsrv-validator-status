@@ -30,7 +30,9 @@ function computeRow(p, prices) {
   const priceUsd = getPriceUsd(prices, p);
   const aum = (p.delegationAmount != null && priceUsd != null) ? p.delegationAmount * priceUsd : null;
   let annualRewardUsd = null;
-  if (p.delegationAmount != null && priceUsd != null && p.aprPercent != null && p.commissionPercent != null) {
+  if (p.monthlyRewardCC != null && priceUsd != null) {
+    annualRewardUsd = p.monthlyRewardCC * 12 * priceUsd;
+  } else if (p.delegationAmount != null && priceUsd != null && p.aprPercent != null && p.commissionPercent != null) {
     annualRewardUsd = p.delegationAmount * priceUsd * (p.aprPercent / 100) * (p.commissionPercent / 100);
   }
   const monthlyRewardUsd = annualRewardUsd != null ? annualRewardUsd / 12 : null;

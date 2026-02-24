@@ -152,7 +152,9 @@
       const d = new Date(snap.date);
       const dateStr = d.toLocaleDateString("en-US", { month: "short", year: "numeric" });
       let monthlyReward = null;
-      if (amount != null && priceUsd != null && partner.aprPercent != null && partner.commissionPercent != null) {
+      if (partner.monthlyRewardCC != null && priceUsd != null) {
+        monthlyReward = partner.monthlyRewardCC * priceUsd;
+      } else if (amount != null && priceUsd != null && partner.aprPercent != null && partner.commissionPercent != null) {
         monthlyReward = (amount * priceUsd * (partner.aprPercent / 100) * (partner.commissionPercent / 100)) / 12;
       }
       rows.push(
@@ -171,13 +173,29 @@
       priceUsd != null
         ? "$" + priceUsd.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 6 })
         : "—";
-    document.getElementById("m-apr").textContent =
-      partner.aprPercent != null ? partner.aprPercent.toFixed(1) + "%" : "—";
-    document.getElementById("m-commission").textContent =
-      partner.commissionPercent != null ? partner.commissionPercent.toFixed(1) + "%" : "—";
+
+    const hasFixedReward = partner.monthlyRewardCC != null;
+
+    if (hasFixedReward) {
+      const aprBox = document.getElementById("m-apr").parentElement;
+      const commBox = document.getElementById("m-commission").parentElement;
+      aprBox.querySelector(".metric-label").textContent = "Reward Capture";
+      aprBox.querySelector(".metric-value").textContent =
+        partner.rewardCapture != null ? partner.rewardCapture + "%" : "—";
+      commBox.querySelector(".metric-label").textContent = "Monthly CC Earned";
+      commBox.querySelector(".metric-value").textContent =
+        formatNum(partner.monthlyRewardCC) + " CC";
+    } else {
+      document.getElementById("m-apr").textContent =
+        partner.aprPercent != null ? partner.aprPercent.toFixed(1) + "%" : "—";
+      document.getElementById("m-commission").textContent =
+        partner.commissionPercent != null ? partner.commissionPercent.toFixed(1) + "%" : "—";
+    }
 
     let reward = null;
-    if (
+    if (hasFixedReward && priceUsd != null) {
+      reward = partner.monthlyRewardCC * 12 * priceUsd;
+    } else if (
       partner.delegationAmount != null &&
       priceUsd != null &&
       partner.aprPercent != null &&
