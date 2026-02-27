@@ -299,9 +299,7 @@ a:hover {
   flex-direction: column;
   padding: 6px 8px 5px;
   position: relative;
-  flex: 0 1 calc(20% - 6px);
-  min-width: 140px;
-  max-width: calc(20% - 5px);
+  flex: 0 0 calc(20% - 6px);
   cursor: pointer;
   transition: box-shadow 0.25s, transform 0.2s, border-color 0.25s;
   text-decoration: none;
