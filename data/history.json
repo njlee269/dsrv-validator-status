@@ -370,6 +370,37 @@
         "KYVE": null,
         "Initia": null
       }
+    },
+    {
+      "date": "2026-02-27",
+      "delegations": {
+        "Etherfi (total)": 288288,
+        "Lido (total)": 249440,
+        "Swell": 2688,
+        "Solana": 24983,
+        "Sui": 135465641,
+        "Aptos (total)": 4291607,
+        "Near": 2073326,
+        "Monad": 58570000,
+        "Supra": 63561586,
+        "Babylon": 56175134,
+        "Celestia": 5863814,
+        "Cosmos HUB": 75706,
+        "Osmosis": 3790169,
+        "Axelar": 5504261,
+        "Shentu": 1080426,
+        "Provenance (Figure)": 200012050,
+        "0G": 3000548,
+        "IOTA": 47958203,
+        "Story": 7256548,
+        "Plume": 2556993,
+        "Polygon": 118087,
+        "Wemix": 1505357,
+        "IKA": 62360547,
+        "Mitosis": 900001,
+        "Namada": 2257929,
+        "Canton": 507604
+      }
     }
   ]
 }

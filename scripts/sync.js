@@ -67,23 +67,24 @@ const COSMOS_VALIDATORS = {
   "Provenance (Figure)":    { chain: "provenance",  valoper: "pbvaloper1s9f4e20xtqrk9tdfhhpavrf26cqjr4eyt3yjqg" },
 };
 
-const LCD_ENDPOINTS = {
-  "cosmos":      "https://lcd-cosmos.cosmostation.io",
-  "osmosis":     "https://lcd-osmosis.cosmostation.io",
-  "celestia":    "https://lcd-celestia.cosmostation.io",
-  "axelar":      "https://lcd-axelar.cosmostation.io",
-  "shentu":      "https://lcd-shentu.cosmostation.io",
-  "provenance":  "https://lcd-provenance.cosmostation.io",
+// Token decimals: most Cosmos chains use 6 (uatom, utia, etc.), Provenance uses 9 (nhash)
+const CHAIN_CONFIG = {
+  "cosmos":      { lcd: "https://cosmos-rest.publicnode.com",      decimals: 6 },
+  "osmosis":     { lcd: "https://osmosis-rest.publicnode.com",     decimals: 6 },
+  "celestia":    { lcd: "https://celestia-rest.publicnode.com",    decimals: 6 },
+  "axelar":      { lcd: "https://axelar-rest.publicnode.com",      decimals: 6 },
+  "shentu":      { lcd: "https://shentu-rest.publicnode.com",      decimals: 6 },
+  "provenance":  { lcd: "https://provenance-rest.publicnode.com",  decimals: 9 },
 };
 
 async function fetchCosmosDelegation(chain, valoper) {
-  const lcd = LCD_ENDPOINTS[chain];
-  if (!lcd) return null;
+  const cfg = CHAIN_CONFIG[chain];
+  if (!cfg) return null;
   try {
-    const url = `${lcd}/cosmos/staking/v1beta1/validators/${valoper}`;
+    const url = `${cfg.lcd}/cosmos/staking/v1beta1/validators/${valoper}`;
     const data = await httpGet(url);
     const tokens = data?.validator?.tokens;
-    if (tokens) return Math.round(Number(tokens) / 1e6);
+    if (tokens) return Math.round(Number(tokens) / Math.pow(10, cfg.decimals));
     return null;
   } catch {
     return null;

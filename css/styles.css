@@ -286,8 +286,8 @@ a:hover {
 .tile-grid {
   display: grid;
   grid-template-columns: repeat(5, 1fr);
-  gap: 10px;
-  padding: 14px;
+  gap: 6px;
+  padding: 10px;
 }
 
 .tile {
@@ -297,7 +297,7 @@ a:hover {
   box-shadow: var(--shadow);
   display: flex;
   flex-direction: column;
-  padding: 10px 12px 8px;
+  padding: 6px 8px 5px;
   position: relative;
   min-width: 0;
   cursor: pointer;
@@ -319,11 +319,11 @@ a:hover {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 4px;
+  margin-bottom: 2px;
 }
 
 .tile-name {
-  font-size: 0.72rem;
+  font-size: 0.62rem;
   font-weight: 700;
   color: var(--text);
   white-space: nowrap;
@@ -333,7 +333,7 @@ a:hover {
 }
 
 .tile-price {
-  font-size: 0.68rem;
+  font-size: 0.58rem;
   font-weight: 600;
   color: var(--text-dim);
   white-space: nowrap;
@@ -342,7 +342,7 @@ a:hover {
 .tile-chart {
   flex: 1;
   min-height: 0;
-  height: 48px;
+  height: 34px;
   position: relative;
 }
 
@@ -360,10 +360,10 @@ a:hover {
 }
 
 .tile-change {
-  font-size: 0.68rem;
+  font-size: 0.58rem;
   font-weight: 600;
-  padding: 1px 6px;
-  border-radius: 4px;
+  padding: 1px 4px;
+  border-radius: 3px;
 }
 
 .tile-change.up {
@@ -381,7 +381,7 @@ a:hover {
 }
 
 .tile-token {
-  font-size: 0.68rem;
+  font-size: 0.58rem;
   font-weight: 600;
   color: var(--text);
   text-align: right;
