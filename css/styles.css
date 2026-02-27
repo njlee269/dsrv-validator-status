@@ -284,8 +284,8 @@ a:hover {
 /* ── Delegation mini-tile grid ── */
 
 .tile-grid {
-  display: grid;
-  grid-template-columns: repeat(5, 1fr);
+  display: flex;
+  flex-wrap: wrap;
   gap: 6px;
   padding: 10px;
 }
@@ -300,6 +300,8 @@ a:hover {
   padding: 6px 8px 5px;
   position: relative;
   min-width: 0;
+  flex: 1 1 calc(20% - 6px);
+  min-width: 140px;
   cursor: pointer;
   transition: box-shadow 0.25s, transform 0.2s, border-color 0.25s;
   text-decoration: none;
@@ -323,7 +325,7 @@ a:hover {
 }
 
 .tile-name {
-  font-size: 0.62rem;
+  font-size: 0.68rem;
   font-weight: 700;
   color: var(--text);
   white-space: nowrap;
@@ -333,7 +335,7 @@ a:hover {
 }
 
 .tile-price {
-  font-size: 0.58rem;
+  font-size: 0.64rem;
   font-weight: 600;
   color: var(--text-dim);
   white-space: nowrap;
@@ -360,7 +362,7 @@ a:hover {
 }
 
 .tile-change {
-  font-size: 0.58rem;
+  font-size: 0.64rem;
   font-weight: 600;
   padding: 1px 4px;
   border-radius: 3px;
@@ -381,7 +383,7 @@ a:hover {
 }
 
 .tile-token {
-  font-size: 0.58rem;
+  font-size: 0.64rem;
   font-weight: 600;
   color: var(--text);
   text-align: right;
@@ -401,6 +403,23 @@ a:hover {
 
 .back-link:hover {
   text-decoration: underline;
+}
+
+.explorer-btn {
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--panel);
+  background: var(--accent);
+  padding: 4px 12px;
+  border-radius: 4px;
+  text-decoration: none;
+  margin-left: 12px;
+  vertical-align: middle;
+  transition: opacity 0.2s;
+}
+
+.explorer-btn:hover {
+  opacity: 0.8;
 }
 
 .sep {

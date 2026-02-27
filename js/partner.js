@@ -21,6 +21,12 @@
   document.title = partner.name + " — DSRV Validator Status";
   document.getElementById("partner-name").textContent = partner.name + " (" + partner.tokenSymbol + ")";
 
+  const explorerBtn = document.getElementById("explorer-link");
+  if (explorerBtn && partner.explorerDelegation) {
+    explorerBtn.href = partner.explorerDelegation;
+    explorerBtn.style.display = "inline-block";
+  }
+
   function formatNum(n) {
     if (n == null || isNaN(n)) return "—";
     if (n >= 1e9) return (n / 1e9).toFixed(2) + "B";
@@ -30,6 +36,7 @@
   }
 
   let delegationChart = null;
+  let rewardChart = null;
   let sparklineChart = null;
 
   function drawDelegationChart(snapshots) {
@@ -88,6 +95,78 @@
               color: "#667085",
               font: { family: "'Source Code Pro', monospace", size: 11 },
               callback: (v) => formatNum(v),
+            },
+          },
+        },
+      },
+    });
+  }
+
+  function drawRewardChart(snapshots, priceUsd) {
+    const ctx = document.getElementById("reward-chart");
+    if (!ctx || !window.Chart) return;
+
+    const labels = [];
+    const values = [];
+    for (const snap of snapshots) {
+      const d = new Date(snap.date);
+      labels.push(d.toLocaleDateString("en-US", { month: "short", year: "2-digit" }));
+      const amount = snap.delegations[partner.name];
+      let monthly = null;
+      if (partner.monthlyRewardCC != null && priceUsd != null) {
+        monthly = partner.monthlyRewardCC * priceUsd;
+      } else if (amount != null && priceUsd != null && partner.aprPercent != null && partner.commissionPercent != null) {
+        monthly = (amount * priceUsd * (partner.aprPercent / 100) * (partner.commissionPercent / 100)) / 12;
+      }
+      values.push(monthly);
+    }
+
+    if (rewardChart) rewardChart.destroy();
+    rewardChart = new Chart(ctx, {
+      type: "line",
+      data: {
+        labels: labels,
+        datasets: [{
+          label: "Monthly Reward (USD)",
+          data: values,
+          borderColor: "#12b76a",
+          backgroundColor: "rgba(18,183,106,0.08)",
+          fill: true,
+          tension: 0.4,
+          pointRadius: 4,
+          pointBackgroundColor: "#12b76a",
+          pointBorderColor: "#fff",
+          pointBorderWidth: 2,
+          borderWidth: 2.5,
+        }],
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            backgroundColor: "#1d2939",
+            titleColor: "#fff",
+            bodyColor: "#fff",
+            cornerRadius: 8,
+            padding: 10,
+            callbacks: {
+              label: (ctx) => "$" + (ctx.parsed.y != null ? ctx.parsed.y.toLocaleString(undefined, { maximumFractionDigits: 0 }) : "—"),
+            },
+          },
+        },
+        scales: {
+          x: {
+            grid: { color: "rgba(0,0,0,0.04)" },
+            ticks: { color: "#667085", font: { family: "'Source Code Pro', monospace", size: 11 } },
+          },
+          y: {
+            grid: { color: "rgba(0,0,0,0.04)" },
+            ticks: {
+              color: "#667085",
+              font: { family: "'Source Code Pro', monospace", size: 11 },
+              callback: (v) => "$" + formatNum(v),
             },
           },
         },
@@ -270,6 +349,7 @@
 
         if (history && history.snapshots) {
           drawDelegationChart(history.snapshots);
+          drawRewardChart(history.snapshots, priceUsd);
           renderHistoryTable(history.snapshots, priceUsd);
         }
 

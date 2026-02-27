@@ -9,7 +9,7 @@
 </head>
 <body>
   <header class="header">
-    <h1><a href="index.html" class="back-link">&larr; Dashboard</a> <span class="sep">|</span> <span id="partner-name">Partner</span></h1>
+    <h1><a href="index.html" class="back-link">&larr; Dashboard</a> <span class="sep">|</span> <span id="partner-name">Partner</span> <a id="explorer-link" href="#" target="_blank" rel="noopener" class="explorer-btn" style="display:none">Chain Explorer</a></h1>
     <span class="meta">Prices: <span id="prices-loading">loading…</span> <span id="prices-updated"></span></span>
   </header>
 
@@ -18,6 +18,13 @@
       <div class="panel-title">Delegation Amount by Month</div>
       <div class="chart-wrap">
         <canvas id="delegation-chart"></canvas>
+      </div>
+    </div>
+
+    <div class="panel partner-chart-panel">
+      <div class="panel-title">Monthly Reward (USD) by Month</div>
+      <div class="chart-wrap">
+        <canvas id="reward-chart"></canvas>
       </div>
     </div>
 
