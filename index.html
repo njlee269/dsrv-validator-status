@@ -4,59 +4,576 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>DSRV Validator Status</title>
-  <link rel="stylesheet" href="css/styles.css?v=20260227b" />
+  <link rel="stylesheet" href="css/styles.css?v=20260311" />
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 </head>
-<body>
-  <header class="header">
-    <h1><span class="accent">DSRV</span> Validator Status</h1>
-    <span class="meta">Data: <span id="data-time">—</span> &middot; Prices: <span id="prices-loading">loading…</span> <span id="prices-updated"></span></span>
-  </header>
-  <div class="layout-full">
-    <div class="panel panel-aum">
-      <div class="panel-title">Total AUM by Month (USD)</div>
-      <div class="chart-wrap">
-        <canvas id="chart"></canvas>
-      </div>
+<body class="has-sidebar">
+  <!-- Sidebar -->
+  <nav class="sidebar" id="sidebar">
+    <div class="sidebar-brand">
+      <span class="accent">DSRV</span> Validator
     </div>
-    <div class="panel panel-tiles">
-      <div class="panel-title">
-        Delegation Change
-        <button class="toggle-btn" id="toggle-tiles" aria-expanded="true">Hide</button>
+    <ul class="sidebar-nav">
+      <li><a href="#dashboard" class="sidebar-link active" data-page="dashboard">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+        Dashboard
+      </a></li>
+      <li><a href="#potential-partners" class="sidebar-link" data-page="potential-partners">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><line x1="20" y1="8" x2="20" y2="14"/><line x1="23" y1="11" x2="17" y2="11"/></svg>
+        Potential Partners
+      </a></li>
+      <li><a href="#simulation" class="sidebar-link" data-page="simulation">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+        Simulation
+      </a></li>
+      <li><a href="#infra-costs" class="sidebar-link" data-page="infra-costs">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="8" rx="2" ry="2"/><rect x="2" y="14" width="20" height="8" rx="2" ry="2"/><line x1="6" y1="6" x2="6.01" y2="6"/><line x1="6" y1="18" x2="6.01" y2="18"/></svg>
+        Infra Costs
+      </a></li>
+      <li><a href="#net-revenue" class="sidebar-link" data-page="net-revenue">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+        Net Revenue
+      </a></li>
+      <li><a href="#competitors" class="sidebar-link" data-page="competitors">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+        Competitors
+      </a></li>
+    </ul>
+  </nav>
+
+  <!-- Main content area -->
+  <div class="main-wrapper">
+    <header class="header">
+      <h1><span class="accent">DSRV</span> Validator Status</h1>
+      <span class="meta">Data: <span id="data-time">—</span> &middot; Prices: <span id="prices-loading">loading…</span> <span id="prices-updated"></span></span>
+    </header>
+
+    <!-- PAGE: Dashboard (existing) -->
+    <section id="page-dashboard" class="page-section active">
+      <div class="layout-full">
+        <div class="panel panel-aum">
+          <div class="panel-title">Total AUM by Month (USD)</div>
+          <div class="chart-wrap">
+            <canvas id="chart"></canvas>
+          </div>
+        </div>
+        <div class="panel panel-tiles">
+          <div class="panel-title">
+            Delegation Change
+            <button class="toggle-btn" id="toggle-tiles" aria-expanded="true">Hide</button>
+          </div>
+          <div class="tile-grid-wrapper" id="tile-grid-wrapper">
+            <div class="tile-grid" id="tile-grid"></div>
+          </div>
+        </div>
+        <div class="panel panel-table">
+          <div class="panel-title">DSRV Validator Partners</div>
+          <div class="search-wrap">
+            <input type="text" class="search-input" id="partner-search" placeholder="Search partners..." />
+          </div>
+          <div class="table-wrap">
+            <table id="main-table">
+              <thead>
+                <tr>
+                  <th>Partner</th>
+                  <th class="num">Delegation</th>
+                  <th>Token</th>
+                  <th class="num">Price (USD)</th>
+                  <th class="num">24h %</th>
+                  <th class="num">APR %</th>
+                  <th class="num">Commission %</th>
+                  <th class="num">Monthly Reward (USD)</th>
+                  <th class="num">Annual Reward (USD)</th>
+                  <th class="num">AUM</th>
+                  <th class="num">Uptime %</th>
+                  <th class="link-cell">Delegation · Uptime</th>
+                </tr>
+              </thead>
+              <tbody id="tbody"></tbody>
+            </table>
+          </div>
+        </div>
       </div>
-      <div class="tile-grid-wrapper" id="tile-grid-wrapper">
-        <div class="tile-grid" id="tile-grid"></div>
+    </section>
+
+    <!-- PAGE: Potential Partners -->
+    <section id="page-potential-partners" class="page-section">
+      <div class="layout-full">
+        <div class="panel">
+          <div class="panel-title">
+            Potential Partners
+            <button class="btn-primary" id="btn-add-prospect">+ Add Protocol</button>
+          </div>
+          <div id="prospect-form-wrap" class="form-panel" style="display:none">
+            <form id="prospect-form" class="crud-form">
+              <input type="hidden" id="pf-id" />
+              <div class="form-grid">
+                <div class="form-group">
+                  <label for="pf-name">Protocol Name *</label>
+                  <input type="text" id="pf-name" required />
+                </div>
+                <div class="form-group">
+                  <label for="pf-chain-type">Chain Type</label>
+                  <select id="pf-chain-type">
+                    <option value="L1">L1</option>
+                    <option value="L2">L2</option>
+                    <option value="Cosmos">Cosmos</option>
+                    <option value="Ethereum">Ethereum</option>
+                    <option value="Other">Other</option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label for="pf-token">Token Symbol</label>
+                  <input type="text" id="pf-token" />
+                </div>
+                <div class="form-group">
+                  <label for="pf-coingecko">CoinGecko ID</label>
+                  <input type="text" id="pf-coingecko" placeholder="e.g. ethereum" />
+                </div>
+                <div class="form-group">
+                  <label for="pf-website">Website</label>
+                  <input type="url" id="pf-website" />
+                </div>
+                <div class="form-group">
+                  <label for="pf-twitter">Twitter</label>
+                  <input type="text" id="pf-twitter" placeholder="@handle or URL" />
+                </div>
+                <div class="form-group">
+                  <label for="pf-explorer">Explorer URL</label>
+                  <input type="url" id="pf-explorer" />
+                </div>
+                <div class="form-group">
+                  <label for="pf-fdv">FDV (USD)</label>
+                  <input type="number" id="pf-fdv" step="any" />
+                </div>
+                <div class="form-group">
+                  <label for="pf-mcap">Market Cap (USD)</label>
+                  <input type="number" id="pf-mcap" step="any" />
+                </div>
+                <div class="form-group">
+                  <label for="pf-circ-supply">Circulating Supply</label>
+                  <input type="number" id="pf-circ-supply" step="any" />
+                </div>
+                <div class="form-group">
+                  <label for="pf-total-supply">Total Supply</label>
+                  <input type="number" id="pf-total-supply" step="any" />
+                </div>
+                <div class="form-group">
+                  <label for="pf-staking-ratio">Staking Ratio %</label>
+                  <input type="number" id="pf-staking-ratio" step="any" />
+                </div>
+                <div class="form-group">
+                  <label for="pf-apr">APR %</label>
+                  <input type="number" id="pf-apr" step="any" />
+                </div>
+                <div class="form-group">
+                  <label for="pf-commission">Expected Commission %</label>
+                  <input type="number" id="pf-commission" step="any" />
+                </div>
+                <div class="form-group">
+                  <label for="pf-delegation">Est. Delegation (tokens)</label>
+                  <input type="number" id="pf-delegation" step="any" />
+                </div>
+                <div class="form-group form-group-wide">
+                  <label for="pf-backers">Backers / Investors</label>
+                  <input type="text" id="pf-backers" placeholder="e.g. a16z, Paradigm" />
+                </div>
+                <div class="form-group form-group-wide">
+                  <label for="pf-background">Brief Background</label>
+                  <textarea id="pf-background" rows="2"></textarea>
+                </div>
+                <div class="form-group form-group-wide">
+                  <label for="pf-notes">Notes</label>
+                  <textarea id="pf-notes" rows="2"></textarea>
+                </div>
+              </div>
+              <div class="form-actions">
+                <button type="submit" class="btn-primary">Save</button>
+                <button type="button" class="btn-secondary" id="btn-cancel-prospect">Cancel</button>
+              </div>
+            </form>
+          </div>
+          <div class="table-wrap">
+            <table id="prospect-table">
+              <thead>
+                <tr>
+                  <th>Name</th>
+                  <th>Type</th>
+                  <th>Token</th>
+                  <th class="num">FDV</th>
+                  <th class="num">Market Cap</th>
+                  <th class="num">Staking %</th>
+                  <th class="num">APR %</th>
+                  <th class="num">Comm %</th>
+                  <th class="num">Est. Monthly Rev</th>
+                  <th>Added</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="prospect-tbody"></tbody>
+            </table>
+          </div>
+        </div>
+        <div class="panel">
+          <div class="panel-title">
+            News &amp; Announcements
+            <button class="btn-primary" id="btn-add-news">+ Add News</button>
+          </div>
+          <div id="news-form-wrap" class="form-panel" style="display:none">
+            <form id="news-form" class="crud-form">
+              <div class="form-grid">
+                <div class="form-group">
+                  <label for="nf-title">Title *</label>
+                  <input type="text" id="nf-title" required />
+                </div>
+                <div class="form-group">
+                  <label for="nf-link">Link</label>
+                  <input type="url" id="nf-link" />
+                </div>
+                <div class="form-group">
+                  <label for="nf-protocol">Related Protocol</label>
+                  <input type="text" id="nf-protocol" />
+                </div>
+                <div class="form-group">
+                  <label for="nf-date">Date</label>
+                  <input type="date" id="nf-date" />
+                </div>
+                <div class="form-group form-group-wide">
+                  <label for="nf-summary">Summary</label>
+                  <textarea id="nf-summary" rows="2"></textarea>
+                </div>
+              </div>
+              <div class="form-actions">
+                <button type="submit" class="btn-primary">Add News</button>
+                <button type="button" class="btn-secondary" id="btn-cancel-news">Cancel</button>
+              </div>
+            </form>
+          </div>
+          <div id="news-list" class="news-list"></div>
+        </div>
       </div>
-    </div>
-    <div class="panel panel-table">
-      <div class="panel-title">DSRV Validator Partners</div>
-      <div class="search-wrap">
-        <input type="text" class="search-input" id="partner-search" placeholder="Search partners..." />
+    </section>
+
+    <!-- PAGE: Simulation -->
+    <section id="page-simulation" class="page-section">
+      <div class="layout-full">
+        <div class="panel">
+          <div class="panel-title">Revenue Simulation Calculator</div>
+          <div class="sim-container">
+            <div class="sim-inputs">
+              <div class="form-group">
+                <label for="sim-source">Load From</label>
+                <select id="sim-source">
+                  <option value="">-- Custom --</option>
+                </select>
+              </div>
+              <div class="form-grid">
+                <div class="form-group">
+                  <label for="sim-name">Protocol Name</label>
+                  <input type="text" id="sim-name" />
+                </div>
+                <div class="form-group">
+                  <label for="sim-token">Token Symbol</label>
+                  <input type="text" id="sim-token" />
+                </div>
+                <div class="form-group">
+                  <label for="sim-coingecko">CoinGecko ID</label>
+                  <input type="text" id="sim-coingecko" />
+                </div>
+                <div class="form-group">
+                  <label for="sim-price">Token Price (USD)</label>
+                  <input type="number" id="sim-price" step="any" />
+                </div>
+                <div class="form-group">
+                  <label for="sim-fdv">FDV (USD)</label>
+                  <input type="number" id="sim-fdv" step="any" />
+                </div>
+                <div class="form-group">
+                  <label for="sim-circ-supply">Circulating Supply</label>
+                  <input type="number" id="sim-circ-supply" step="any" />
+                </div>
+                <div class="form-group">
+                  <label for="sim-total-supply">Total Supply</label>
+                  <input type="number" id="sim-total-supply" step="any" />
+                </div>
+                <div class="form-group">
+                  <label for="sim-staking-ratio">Staking Ratio %</label>
+                  <input type="number" id="sim-staking-ratio" step="any" value="50" />
+                </div>
+                <div class="form-group">
+                  <label for="sim-dsrv-share">DSRV Delegation Share %</label>
+                  <input type="number" id="sim-dsrv-share" step="any" value="1" />
+                </div>
+                <div class="form-group">
+                  <label for="sim-apr">APR %</label>
+                  <input type="number" id="sim-apr" step="any" value="10" />
+                </div>
+                <div class="form-group">
+                  <label for="sim-commission">Commission %</label>
+                  <input type="number" id="sim-commission" step="any" value="10" />
+                </div>
+              </div>
+              <div class="form-actions">
+                <button type="button" class="btn-primary" id="btn-sim-calc">Calculate</button>
+                <button type="button" class="btn-secondary" id="btn-sim-reset">Reset</button>
+              </div>
+            </div>
+            <div class="sim-results" id="sim-results">
+              <div class="metric-row">
+                <div class="metric-box">
+                  <div class="metric-label">Total Staked Tokens</div>
+                  <div class="metric-value" id="sim-r-staked">—</div>
+                </div>
+                <div class="metric-box">
+                  <div class="metric-label">DSRV Delegation</div>
+                  <div class="metric-value" id="sim-r-delegation">—</div>
+                </div>
+                <div class="metric-box">
+                  <div class="metric-label">AUM (USD)</div>
+                  <div class="metric-value" id="sim-r-aum">—</div>
+                </div>
+                <div class="metric-box">
+                  <div class="metric-label">Monthly Reward</div>
+                  <div class="metric-value" id="sim-r-monthly">—</div>
+                </div>
+                <div class="metric-box">
+                  <div class="metric-label">Annual Reward</div>
+                  <div class="metric-value" id="sim-r-annual">—</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="panel">
+          <div class="panel-title">Ranking Among Current Partners</div>
+          <div class="table-wrap">
+            <table id="sim-rank-table">
+              <thead>
+                <tr>
+                  <th>#</th>
+                  <th>Partner</th>
+                  <th class="num">Annual Reward (USD)</th>
+                  <th class="num">AUM (USD)</th>
+                </tr>
+              </thead>
+              <tbody id="sim-rank-tbody"></tbody>
+            </table>
+          </div>
+        </div>
       </div>
-      <div class="table-wrap">
-        <table id="main-table">
-          <thead>
-            <tr>
-              <th>Partner</th>
-              <th class="num">Delegation</th>
-              <th>Token</th>
-              <th class="num">Price (USD)</th>
-              <th class="num">24h %</th>
-              <th class="num">APR %</th>
-              <th class="num">Commission %</th>
-              <th class="num">Monthly Reward (USD)</th>
-              <th class="num">Annual Reward (USD)</th>
-              <th class="num">AUM</th>
-              <th class="num">Uptime %</th>
-              <th class="link-cell">Delegation · Uptime</th>
-            </tr>
-          </thead>
-          <tbody id="tbody"></tbody>
-        </table>
+    </section>
+
+    <!-- PAGE: Infra Costs -->
+    <section id="page-infra-costs" class="page-section">
+      <div class="layout-full">
+        <div class="metric-row" id="infra-summary-cards">
+          <div class="metric-box">
+            <div class="metric-label">Current Partners Cost / mo</div>
+            <div class="metric-value" id="infra-total-current">—</div>
+          </div>
+          <div class="metric-box">
+            <div class="metric-label">Potential Partners Cost / mo</div>
+            <div class="metric-value" id="infra-total-potential">—</div>
+          </div>
+          <div class="metric-box">
+            <div class="metric-label">Total Infra Cost / mo</div>
+            <div class="metric-value" id="infra-total-all">—</div>
+          </div>
+        </div>
+        <div class="panel">
+          <div class="panel-title">
+            Infrastructure Costs
+            <button class="btn-primary" id="btn-add-infra">+ Add Cost Entry</button>
+          </div>
+          <div id="infra-form-wrap" class="form-panel" style="display:none">
+            <form id="infra-form" class="crud-form">
+              <input type="hidden" id="inf-id" />
+              <div class="form-grid">
+                <div class="form-group">
+                  <label for="inf-chain">Chain Name *</label>
+                  <input type="text" id="inf-chain" required />
+                </div>
+                <div class="form-group">
+                  <label for="inf-is-current">Partner Status</label>
+                  <select id="inf-is-current">
+                    <option value="true">Current Partner</option>
+                    <option value="false">Potential Partner</option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label for="inf-provider">Provider</label>
+                  <select id="inf-provider">
+                    <option value="AWS">AWS</option>
+                    <option value="GCP">GCP</option>
+                    <option value="Azure">Azure</option>
+                    <option value="Bare Metal">Bare Metal</option>
+                    <option value="Other">Other</option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label for="inf-instance">Instance Type</label>
+                  <input type="text" id="inf-instance" placeholder="e.g. m5.2xlarge" />
+                </div>
+                <div class="form-group">
+                  <label for="inf-cost">Monthly Cost (USD) *</label>
+                  <input type="number" id="inf-cost" step="any" required />
+                </div>
+                <div class="form-group form-group-wide">
+                  <label for="inf-notes">Notes</label>
+                  <textarea id="inf-notes" rows="2"></textarea>
+                </div>
+              </div>
+              <div class="form-actions">
+                <button type="submit" class="btn-primary">Save</button>
+                <button type="button" class="btn-secondary" id="btn-cancel-infra">Cancel</button>
+              </div>
+            </form>
+          </div>
+          <div class="table-wrap">
+            <table id="infra-table">
+              <thead>
+                <tr>
+                  <th>Chain</th>
+                  <th>Status</th>
+                  <th>Provider</th>
+                  <th>Instance</th>
+                  <th class="num">Monthly Cost</th>
+                  <th>Notes</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="infra-tbody"></tbody>
+            </table>
+          </div>
+        </div>
       </div>
-    </div>
+    </section>
+
+    <!-- PAGE: Net Revenue -->
+    <section id="page-net-revenue" class="page-section">
+      <div class="layout-full">
+        <div class="metric-row" id="netrev-summary-cards">
+          <div class="metric-box">
+            <div class="metric-label">Gross Monthly Revenue</div>
+            <div class="metric-value" id="netrev-gross">—</div>
+          </div>
+          <div class="metric-box">
+            <div class="metric-label">Total Infra Cost / mo</div>
+            <div class="metric-value" id="netrev-cost">—</div>
+          </div>
+          <div class="metric-box">
+            <div class="metric-label">Net Monthly Revenue</div>
+            <div class="metric-value" id="netrev-net">—</div>
+          </div>
+          <div class="metric-box">
+            <div class="metric-label">Avg Margin</div>
+            <div class="metric-value" id="netrev-margin">—</div>
+          </div>
+        </div>
+        <div class="panel panel-aum">
+          <div class="panel-title">Net Revenue by Chain</div>
+          <div class="chart-wrap">
+            <canvas id="netrev-chart"></canvas>
+          </div>
+        </div>
+        <div class="panel">
+          <div class="panel-title">Per-Chain Net Revenue</div>
+          <div class="table-wrap">
+            <table id="netrev-table">
+              <thead>
+                <tr>
+                  <th>Chain</th>
+                  <th class="num">Gross Monthly Rev</th>
+                  <th class="num">Infra Cost / mo</th>
+                  <th class="num">Net Monthly Rev</th>
+                  <th class="num">Margin %</th>
+                </tr>
+              </thead>
+              <tbody id="netrev-tbody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- PAGE: Competitors -->
+    <section id="page-competitors" class="page-section">
+      <div class="layout-full">
+        <div class="panel">
+          <div class="panel-title">
+            Competitor Validators
+            <button class="btn-primary" id="btn-add-competitor">+ Add Competitor</button>
+          </div>
+          <div id="comp-form-wrap" class="form-panel" style="display:none">
+            <form id="comp-form" class="crud-form">
+              <input type="hidden" id="cf-id" />
+              <div class="form-grid">
+                <div class="form-group">
+                  <label for="cf-name">Name *</label>
+                  <input type="text" id="cf-name" required />
+                </div>
+                <div class="form-group">
+                  <label for="cf-website">Website</label>
+                  <input type="url" id="cf-website" />
+                </div>
+                <div class="form-group form-group-wide">
+                  <label for="cf-notes">Notes</label>
+                  <textarea id="cf-notes" rows="2"></textarea>
+                </div>
+              </div>
+              <h4 class="form-subtitle">Chains</h4>
+              <div id="cf-chains-list" class="chains-list"></div>
+              <button type="button" class="btn-secondary" id="btn-add-comp-chain">+ Add Chain</button>
+              <div class="form-actions">
+                <button type="submit" class="btn-primary">Save</button>
+                <button type="button" class="btn-secondary" id="btn-cancel-competitor">Cancel</button>
+              </div>
+            </form>
+          </div>
+          <div class="table-wrap">
+            <table id="comp-table">
+              <thead>
+                <tr>
+                  <th>Competitor</th>
+                  <th>Website</th>
+                  <th class="num"># Chains</th>
+                  <th class="num">Est. Total AUM</th>
+                  <th>Notes</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="comp-tbody"></tbody>
+            </table>
+          </div>
+        </div>
+        <div class="panel">
+          <div class="panel-title">Competitor Chain Details</div>
+          <div id="comp-detail-placeholder" class="empty-state">Select a competitor above to view chain details</div>
+          <div class="table-wrap" id="comp-detail-wrap" style="display:none">
+            <table id="comp-detail-table">
+              <thead>
+                <tr>
+                  <th>Chain</th>
+                  <th class="num">Delegation</th>
+                  <th class="num">Est. AUM</th>
+                  <th class="num">Commission %</th>
+                </tr>
+              </thead>
+              <tbody id="comp-detail-tbody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </section>
   </div>
-  <script src="js/data.js?v=20260227b"></script>
-  <script src="js/app.js?v=20260227b"></script>
+
+  <script src="js/data.js?v=20260311"></script>
+  <script src="js/app.js?v=20260311"></script>
+  <script src="js/router.js?v=20260311"></script>
+  <script src="js/potential-partners.js?v=20260311"></script>
+  <script src="js/simulation.js?v=20260311"></script>
+  <script src="js/infra-costs.js?v=20260311"></script>
+  <script src="js/net-revenue.js?v=20260311"></script>
+  <script src="js/competitors.js?v=20260311"></script>
 </body>
 </html>

@@ -30,6 +30,101 @@ body {
   overflow-x: auto;
 }
 
+body.has-sidebar {
+  display: flex;
+}
+
+/* ── Sidebar ── */
+
+.sidebar {
+  width: 220px;
+  min-width: 220px;
+  background: var(--accent);
+  color: #fff;
+  display: flex;
+  flex-direction: column;
+  position: fixed;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  z-index: 100;
+  overflow-y: auto;
+}
+
+.sidebar-brand {
+  padding: 20px 18px 16px;
+  font-size: 1rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  border-bottom: 1px solid rgba(255,255,255,0.1);
+}
+
+.sidebar-brand .accent {
+  color: #fff;
+}
+
+.sidebar-nav {
+  list-style: none;
+  margin: 0;
+  padding: 8px 0;
+}
+
+.sidebar-nav li {
+  margin: 0;
+}
+
+.sidebar-link {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 11px 18px;
+  font-size: 0.78rem;
+  font-weight: 500;
+  color: rgba(255,255,255,0.65);
+  text-decoration: none;
+  transition: background 0.15s, color 0.15s;
+}
+
+.sidebar-link:hover {
+  background: rgba(255,255,255,0.08);
+  color: #fff;
+  text-decoration: none;
+}
+
+.sidebar-link.active {
+  background: rgba(255,255,255,0.12);
+  color: #fff;
+  font-weight: 700;
+}
+
+.sidebar-link svg {
+  flex-shrink: 0;
+  opacity: 0.7;
+}
+
+.sidebar-link.active svg {
+  opacity: 1;
+}
+
+.main-wrapper {
+  flex: 1;
+  margin-left: 220px;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ── Page sections ── */
+
+.page-section {
+  display: none;
+  flex: 1;
+}
+
+.page-section.active {
+  display: block;
+}
+
 /* ── Header ── */
 
 .header {
@@ -484,4 +579,260 @@ a:hover {
 .partner-table-panel {
   flex: 1;
   min-height: 0;
+}
+
+/* ── Buttons ── */
+
+.btn-primary {
+  background: var(--accent);
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  padding: 7px 16px;
+  font-family: 'Source Code Pro', monospace;
+  font-size: 0.72rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity 0.15s;
+}
+
+.btn-primary:hover {
+  opacity: 0.85;
+}
+
+.btn-secondary {
+  background: none;
+  color: var(--text-dim);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 7px 16px;
+  font-family: 'Source Code Pro', monospace;
+  font-size: 0.72rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+}
+
+.btn-secondary:hover {
+  background: var(--bg);
+  color: var(--text);
+}
+
+.btn-danger {
+  background: none;
+  color: var(--red);
+  border: 1px solid var(--red);
+  border-radius: 6px;
+  padding: 5px 10px;
+  font-family: 'Source Code Pro', monospace;
+  font-size: 0.68rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.btn-danger:hover {
+  background: rgba(240, 68, 56, 0.08);
+}
+
+.btn-sm {
+  padding: 4px 10px;
+  font-size: 0.68rem;
+}
+
+/* ── CRUD Forms ── */
+
+.form-panel {
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--border);
+  background: #fafbfc;
+}
+
+.crud-form {
+  max-width: 900px;
+}
+
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.form-group-wide {
+  grid-column: 1 / -1;
+}
+
+.form-group label {
+  font-size: 0.68rem;
+  font-weight: 600;
+  color: var(--text-dim);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.form-group input,
+.form-group select,
+.form-group textarea {
+  padding: 7px 10px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  font-family: 'Source Code Pro', monospace;
+  font-size: 0.76rem;
+  color: var(--text);
+  background: #fff;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.form-group input:focus,
+.form-group select:focus,
+.form-group textarea:focus {
+  border-color: var(--blue);
+}
+
+.form-group textarea {
+  resize: vertical;
+}
+
+.form-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.form-subtitle {
+  font-size: 0.76rem;
+  font-weight: 600;
+  color: var(--text);
+  margin: 16px 0 8px;
+}
+
+/* ── Chains list (competitor form) ── */
+
+.chains-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.chain-row {
+  display: flex;
+  gap: 8px;
+  align-items: flex-end;
+}
+
+.chain-row input {
+  padding: 6px 8px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  font-family: 'Source Code Pro', monospace;
+  font-size: 0.74rem;
+  color: var(--text);
+  background: #fff;
+  outline: none;
+  flex: 1;
+}
+
+.chain-row input:focus {
+  border-color: var(--blue);
+}
+
+/* ── News list ── */
+
+.news-list {
+  padding: 12px 20px;
+}
+
+.news-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.news-item:last-child {
+  border-bottom: none;
+}
+
+.news-date {
+  font-size: 0.68rem;
+  color: var(--text-dim);
+  white-space: nowrap;
+  min-width: 80px;
+}
+
+.news-title {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.news-title a {
+  color: var(--blue);
+}
+
+.news-summary {
+  font-size: 0.72rem;
+  color: var(--text-dim);
+  margin-top: 2px;
+}
+
+.news-protocol {
+  font-size: 0.66rem;
+  color: var(--accent);
+  background: rgba(17,17,17,0.06);
+  padding: 2px 6px;
+  border-radius: 4px;
+  white-space: nowrap;
+}
+
+/* ── Empty state ── */
+
+.empty-state {
+  padding: 40px 20px;
+  text-align: center;
+  color: var(--text-dim);
+  font-size: 0.8rem;
+}
+
+/* ── Simulation ── */
+
+.sim-container {
+  padding: 20px;
+}
+
+.sim-inputs {
+  margin-bottom: 24px;
+}
+
+.sim-results {
+  margin-top: 12px;
+}
+
+/* ── Highlight row (for simulation ranking) ── */
+
+tr.highlight-row td {
+  background: rgba(46, 144, 250, 0.08);
+  font-weight: 700;
+}
+
+/* ── Action cell ── */
+
+td .action-btns {
+  display: flex;
+  gap: 4px;
+}
+
+td .action-btns button {
+  padding: 3px 8px;
+  font-size: 0.66rem;
 }
