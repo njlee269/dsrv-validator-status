@@ -86,18 +86,36 @@
   }
 
   async function searchCoins(query) {
-    var r = await fetch("/api/tokenomics/search?q=" + encodeURIComponent(query));
-    if (!r.ok) {
-      var err = await r.json().catch(function () { return {}; });
-      throw new Error(err.error || "Search failed (status " + r.status + ")");
+    var controller = new AbortController();
+    var timer = setTimeout(function () { controller.abort(); }, 15000);
+    try {
+      var r = await fetch("/api/tokenomics/search?q=" + encodeURIComponent(query), { signal: controller.signal });
+      clearTimeout(timer);
+      if (!r.ok) {
+        var err = await r.json().catch(function () { return {}; });
+        throw new Error(err.error || "Search failed (status " + r.status + ")");
+      }
+      return await r.json();
+    } catch (e) {
+      clearTimeout(timer);
+      if (e.name === "AbortError") throw new Error("Search timed out. CoinGecko may be rate-limited — try again in a moment.");
+      throw e;
     }
-    return await r.json();
   }
 
   async function fetchCoinData(id) {
-    var r = await fetch("/api/tokenomics/coin/" + encodeURIComponent(id));
-    if (!r.ok) throw new Error("Fetch failed: " + r.status);
-    return await r.json();
+    var controller = new AbortController();
+    var timer = setTimeout(function () { controller.abort(); }, 60000);
+    try {
+      var r = await fetch("/api/tokenomics/coin/" + encodeURIComponent(id), { signal: controller.signal });
+      clearTimeout(timer);
+      if (!r.ok) throw new Error("Fetch failed: " + r.status);
+      return await r.json();
+    } catch (e) {
+      clearTimeout(timer);
+      if (e.name === "AbortError") throw new Error("Data fetch timed out. Try again shortly.");
+      throw e;
+    }
   }
 
   /* ── Render: Search Panel (always visible) ── */

@@ -255,9 +255,10 @@ app.get("/api/tokenomics/search", async (req, res) => {
   const results = [];
   const seen = new Set();
 
+  const timeout = (ms) => new Promise((_, rej) => setTimeout(() => rej(new Error("timeout")), ms));
   const [cgResult, dlResult] = await Promise.allSettled([
-    cgSearch(q),
-    dlProtocols(),
+    Promise.race([cgSearch(q), timeout(10000)]),
+    Promise.race([dlProtocols(), timeout(8000)]),
   ]);
 
   if (cgResult.status === "fulfilled") {
