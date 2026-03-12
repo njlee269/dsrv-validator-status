@@ -593,6 +593,40 @@
 
           <!-- Manual entry panel (hidden by default) -->
           <div id="tk-manual-panel" class="form-panel" style="display:none">
+            <div class="form-subtitle">Protocol Identity</div>
+            <div class="form-grid">
+              <div class="form-group"><label>Protocol Name *</label><input type="text" id="tk-m-name" placeholder="e.g. Monad" /></div>
+              <div class="form-group"><label>Ticker *</label><input type="text" id="tk-m-ticker" placeholder="e.g. MON" /></div>
+              <div class="form-group">
+                <label>Category</label>
+                <select id="tk-m-category">
+                  <option value="Layer 1 (L1)">L1</option>
+                  <option value="Layer 2 (L2)">L2</option>
+                  <option value="DeFi">DeFi</option>
+                  <option value="LST">LST</option>
+                  <option value="LRT">LRT</option>
+                  <option value="Restaking">Restaking</option>
+                  <option value="Infrastructure">Infrastructure</option>
+                  <option value="Stablecoin">Stablecoin</option>
+                  <option value="Other">Other</option>
+                </select>
+              </div>
+              <div class="form-group"><label>Website</label><input type="url" id="tk-m-website" placeholder="https://..." /></div>
+              <div class="form-group"><label>Docs URL</label><input type="url" id="tk-m-docs" /></div>
+              <div class="form-group"><label>Tokenomics URL</label><input type="url" id="tk-m-tokenomics" /></div>
+            </div>
+            <div class="form-subtitle">Market Data</div>
+            <div class="form-grid">
+              <div class="form-group"><label>Price (USD)</label><input type="number" id="tk-m-price" step="any" /></div>
+              <div class="form-group"><label>Market Cap (USD)</label><input type="number" id="tk-m-mcap" step="any" /></div>
+              <div class="form-group"><label>FDV (USD)</label><input type="number" id="tk-m-fdv" step="any" /></div>
+              <div class="form-group"><label>Circ. Supply</label><input type="number" id="tk-m-circ" step="any" /></div>
+              <div class="form-group"><label>Total Supply</label><input type="number" id="tk-m-total" step="any" /></div>
+              <div class="form-group"><label>Max Supply</label><input type="number" id="tk-m-max" step="any" /></div>
+              <div class="form-group"><label>24h Volume (USD)</label><input type="number" id="tk-m-vol" step="any" /></div>
+              <div class="form-group"><label>TVL (USD)</label><input type="number" id="tk-m-tvl" step="any" /></div>
+            </div>
+            <div class="form-subtitle">Allocations &amp; Unlocks</div>
             <div class="form-grid">
               <div class="form-group"><label>Team Alloc %</label><input type="number" id="tk-m-team" step="any" /></div>
               <div class="form-group"><label>Investor Alloc %</label><input type="number" id="tk-m-investor" step="any" /></div>
@@ -600,9 +634,6 @@
               <div class="form-group"><label>Community Alloc %</label><input type="number" id="tk-m-community" step="any" /></div>
               <div class="form-group"><label>Airdrop Alloc %</label><input type="number" id="tk-m-airdrop" step="any" /></div>
               <div class="form-group"><label>12M Unlock Est. (tokens)</label><input type="number" id="tk-m-unlock12m" step="any" /></div>
-              <div class="form-group"><label>TVL (USD)</label><input type="number" id="tk-m-tvl" step="any" /></div>
-              <div class="form-group"><label>Docs URL</label><input type="url" id="tk-m-docs" /></div>
-              <div class="form-group"><label>Tokenomics URL</label><input type="url" id="tk-m-tokenomics" /></div>
             </div>
             <div class="form-subtitle">Token Utility Flags</div>
             <div class="tk-util-grid">
@@ -617,7 +648,8 @@
               <label class="tk-cb"><input type="checkbox" id="tk-u-validatorSecurity" /> Validator Security</label>
             </div>
             <div class="form-actions">
-              <button type="button" class="btn-primary" id="tk-rerun-btn">Re-run Analysis</button>
+              <button type="button" class="btn-primary" id="tk-manual-analyze-btn">Analyze (Manual Data)</button>
+              <button type="button" class="btn-secondary" id="tk-rerun-btn">Re-run with Overrides</button>
             </div>
           </div>
         </div>

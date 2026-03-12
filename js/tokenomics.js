@@ -83,6 +83,10 @@
 
   async function searchCoins(query) {
     var r = await fetch("/api/tokenomics/search?q=" + encodeURIComponent(query));
+    if (!r.ok) {
+      var err = await r.json().catch(function () { return {}; });
+      throw new Error(err.error || "Search failed (status " + r.status + ")");
+    }
     return await r.json();
   }
 
@@ -97,7 +101,7 @@
   function renderSearchResults(coins) {
     var wrap = document.getElementById("tk-search-results");
     if (!wrap) return;
-    if (!coins || coins.length === 0) { wrap.innerHTML = '<div class="empty-state">No results</div>'; return; }
+    if (!coins || coins.length === 0) { wrap.innerHTML = '<div class="empty-state">No results found. Try a different name or use <strong>Show Manual Entry</strong> below to add it by hand.</div>'; return; }
 
     var html = '<div class="tk-candidates">';
     for (var i = 0; i < coins.length; i++) {
@@ -129,6 +133,7 @@
       var data = await fetchCoinData(coingeckoId);
       applyManualOverrides(data);
       currentData = data;
+      prefillManualFromData(data);
       currentMetrics = TokenomicsCalc.computeAll(data);
       currentUtility = TokenomicsCalc.computeUtilityScore(data.utility);
       currentScore = TokenomicsScore.computeScore(data, currentMetrics, currentUtility);
@@ -145,6 +150,122 @@
     currentUtility = TokenomicsCalc.computeUtilityScore(profile.data.utility);
     currentScore = TokenomicsScore.computeScore(profile.data, currentMetrics, currentUtility);
     renderAll();
+  }
+
+  function manualSrc(val, field) {
+    return {
+      value: val != null && val !== "" ? val : null,
+      source: "manual",
+      sourceUrl: null,
+      confidence: val != null && val !== "" ? "manual" : "none",
+      fetchedAt: new Date().toISOString(),
+      notes: field && (val == null || val === "") ? field + " not provided" : "Manually entered",
+    };
+  }
+
+  function numVal(id) {
+    var el = document.getElementById(id);
+    if (!el || el.value === "") return null;
+    var v = parseFloat(el.value);
+    return isNaN(v) ? null : v;
+  }
+
+  function strVal(id) {
+    var el = document.getElementById(id);
+    return el && el.value.trim() ? el.value.trim() : null;
+  }
+
+  function buildManualData() {
+    var name = strVal("tk-m-name");
+    var ticker = strVal("tk-m-ticker");
+    if (!name || !ticker) return null;
+
+    var catEl = document.getElementById("tk-m-category");
+    var cat = catEl ? catEl.value : "Other";
+    var now = new Date().toISOString();
+
+    var utilKeys = ["gas", "staking", "governance", "feeShare", "burn", "buyback", "collateral", "mandatoryUse", "validatorSecurity"];
+    var utility = {};
+    for (var j = 0; j < utilKeys.length; j++) {
+      var cb = document.getElementById("tk-u-" + utilKeys[j]);
+      utility[utilKeys[j]] = cb ? cb.checked : false;
+    }
+
+    var maxS = numVal("tk-m-max");
+    var totalS = numVal("tk-m-total");
+
+    return {
+      identity: {
+        coingeckoId: "manual-" + ticker.toLowerCase().replace(/[^a-z0-9]/g, ""),
+        name: name,
+        symbol: ticker.toUpperCase(),
+        categories: [cat],
+        homepage: strVal("tk-m-website"),
+        docsUrl: strVal("tk-m-docs"),
+        tokenomicsUrl: strVal("tk-m-tokenomics"),
+        explorerUrl: null,
+        imageThumb: null,
+        genesisDate: null,
+      },
+      market: {
+        price: manualSrc(numVal("tk-m-price"), "price"),
+        marketCap: manualSrc(numVal("tk-m-mcap"), "market_cap"),
+        fdv: manualSrc(numVal("tk-m-fdv"), "fdv"),
+        circulatingSupply: manualSrc(numVal("tk-m-circ"), "circulating_supply"),
+        totalSupply: manualSrc(totalS, "total_supply"),
+        maxSupply: manualSrc(maxS, "max_supply"),
+        volume24h: manualSrc(numVal("tk-m-vol"), "volume_24h"),
+        ath: manualSrc(null, "ath"),
+        athDate: manualSrc(null, "ath_date"),
+        athMarketCap: manualSrc(null, "ath_market_cap"),
+        priceChange24h: manualSrc(null, "price_change_24h"),
+        priceChange7d: manualSrc(null, "price_change_7d"),
+        priceChange30d: manualSrc(null, "price_change_30d"),
+      },
+      allocations: {
+        teamPct: manualSrc(numVal("tk-m-team"), "team_allocation"),
+        investorPct: manualSrc(numVal("tk-m-investor"), "investor_allocation"),
+        foundationPct: manualSrc(numVal("tk-m-foundation"), "foundation_allocation"),
+        communityPct: manualSrc(numVal("tk-m-community"), "community_allocation"),
+        airdropPct: manualSrc(numVal("tk-m-airdrop"), "airdrop_allocation"),
+      },
+      unlocks: {
+        nextUnlockAmount: manualSrc(null, "next_unlock_amount"),
+        nextUnlockDate: manualSrc(null, "next_unlock_date"),
+        tokens12mEstimate: manualSrc(numVal("tk-m-unlock12m"), "12m_unlock_estimate"),
+      },
+      fundamentals: {
+        tvl: manualSrc(numVal("tk-m-tvl"), "tvl"),
+        protocolFees: manualSrc(null, "protocol_fees"),
+        revenue: manualSrc(null, "revenue"),
+      },
+      utility: utility,
+      supplyType: maxS != null ? "capped" : (totalS != null ? "dynamic" : "unknown"),
+    };
+  }
+
+  function prefillManualFromData(data) {
+    if (!data) return;
+    var id = data.identity;
+    var m = data.market;
+    var setVal = function (elId, val) { var el = document.getElementById(elId); if (el && val != null) el.value = val; };
+
+    setVal("tk-m-name", id.name);
+    setVal("tk-m-ticker", id.symbol);
+    setVal("tk-m-website", id.homepage);
+    setVal("tk-m-docs", id.docsUrl);
+    setVal("tk-m-tokenomics", id.tokenomicsUrl);
+
+    if (m.price && m.price.value != null) setVal("tk-m-price", m.price.value);
+    if (m.marketCap && m.marketCap.value != null) setVal("tk-m-mcap", m.marketCap.value);
+    if (m.fdv && m.fdv.value != null) setVal("tk-m-fdv", m.fdv.value);
+    if (m.circulatingSupply && m.circulatingSupply.value != null) setVal("tk-m-circ", m.circulatingSupply.value);
+    if (m.totalSupply && m.totalSupply.value != null) setVal("tk-m-total", m.totalSupply.value);
+    if (m.maxSupply && m.maxSupply.value != null) setVal("tk-m-max", m.maxSupply.value);
+    if (m.volume24h && m.volume24h.value != null) setVal("tk-m-vol", m.volume24h.value);
+
+    var fTvl = data.fundamentals && data.fundamentals.tvl;
+    if (fTvl && fTvl.value != null) setVal("tk-m-tvl", fTvl.value);
   }
 
   function applyManualOverrides(data) {
@@ -397,8 +518,8 @@
   /* ── Save profile ── */
 
   async function saveCurrentProfile() {
-    if (!currentData || !currentScore) return;
-    var id = currentData.identity.coingeckoId;
+    if (!currentData || !currentScore) { alert("Run an analysis first before saving."); return; }
+    var id = currentData.identity.coingeckoId || ("manual-" + currentData.identity.symbol.toLowerCase());
     var existing = profiles.findIndex(function (p) { return p.id === id; });
     var entry = {
       id: id,
@@ -443,7 +564,8 @@
         var coins = await searchCoins(q);
         renderSearchResults(coins);
       } catch (e) {
-        renderSearchResults([]);
+        var wrap = document.getElementById("tk-search-results");
+        if (wrap) wrap.innerHTML = '<div class="empty-state" style="color:var(--red)">Search error: ' + esc(e.message) + '. Use <strong>Show Manual Entry</strong> to add manually.</div>';
       }
       searchBtn.disabled = false;
       searchBtn.textContent = "Search";
@@ -483,6 +605,20 @@
         currentScore = TokenomicsScore.computeScore(currentData, currentMetrics, currentUtility);
         renderAll();
       }
+    });
+
+    var manualAnalyzeBtn = document.getElementById("tk-manual-analyze-btn");
+    if (manualAnalyzeBtn) manualAnalyzeBtn.addEventListener("click", function () {
+      var data = buildManualData();
+      if (!data) {
+        alert("Please fill in at least Protocol Name and Ticker.");
+        return;
+      }
+      currentData = data;
+      currentMetrics = TokenomicsCalc.computeAll(data);
+      currentUtility = TokenomicsCalc.computeUtilityScore(data.utility);
+      currentScore = TokenomicsScore.computeScore(data, currentMetrics, currentUtility);
+      renderAll();
     });
   }
 
