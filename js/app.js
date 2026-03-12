@@ -179,15 +179,15 @@ function drawChart(prices) {
       datasets: [{
         label: chartLabel,
         data: values,
-        borderColor: "#111111",
-        backgroundColor: "rgba(17,17,17,0.06)",
+        borderColor: "#fb923c",
+        backgroundColor: "rgba(251,146,60,0.08)",
         fill: true,
         tension: 0.4,
-        pointRadius: 4,
-        pointBackgroundColor: "#111111",
-        pointBorderColor: "#fff",
+        pointRadius: 3,
+        pointBackgroundColor: "#fb923c",
+        pointBorderColor: "#161616",
         pointBorderWidth: 2,
-        borderWidth: 2.5,
+        borderWidth: 2,
       }],
     },
     options: {
@@ -196,25 +196,25 @@ function drawChart(prices) {
       plugins: {
         legend: { display: false },
         tooltip: {
-          backgroundColor: "#1d2939",
-          titleColor: "#fff",
-          bodyColor: "#fff",
+          backgroundColor: "#1e1e1e",
+          titleColor: "#f0f0f0",
+          bodyColor: "#f0f0f0",
           cornerRadius: 8,
           padding: 10,
-          titleFont: { family: "'Source Code Pro', monospace" },
-          bodyFont: { family: "'Source Code Pro', monospace" },
+          titleFont: { family: "'Inter', sans-serif" },
+          bodyFont: { family: "'Inter', sans-serif" },
         },
       },
       scales: {
         x: {
-          grid: { color: "rgba(0,0,0,0.04)" },
-          ticks: { color: "#667085", font: { family: "'Source Code Pro', monospace", size: 11 } },
+          grid: { color: "rgba(255,255,255,0.04)" },
+          ticks: { color: "#7a7a7a", font: { family: "'Inter', sans-serif", size: 11 } },
         },
         y: {
-          grid: { color: "rgba(0,0,0,0.04)" },
+          grid: { color: "rgba(255,255,255,0.04)" },
           ticks: {
-            color: "#667085",
-            font: { family: "'Source Code Pro', monospace", size: 11 },
+            color: "#7a7a7a",
+            font: { family: "'Inter', sans-serif", size: 11 },
             callback: (v) => yPrefix + formatNum(v),
           },
         },
@@ -301,8 +301,8 @@ function renderTiles() {
     grid.appendChild(tile);
 
     const isUp = pctChange != null && pctChange >= 0;
-    const lineColor = isUp ? "#12b76a" : "#f04438";
-    const fillColor = isUp ? "rgba(18,183,106,0.12)" : "rgba(240,68,56,0.10)";
+    const lineColor = isUp ? "#34d399" : "#f87171";
+    const fillColor = isUp ? "rgba(52,211,153,0.1)" : "rgba(248,113,113,0.1)";
 
     const miniChart = new Chart(canvas, {
       type: "line",

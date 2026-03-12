@@ -10,6 +10,7 @@
     "infra-costs",
     "net-revenue",
     "competitors",
+    "tokenomics",
   ];
 
   const pageInitCallbacks = {};

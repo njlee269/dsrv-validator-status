@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>DSRV Validator Status</title>
-  <link rel="stylesheet" href="css/styles.css?v=20260311" />
+  <link rel="stylesheet" href="css/styles.css?v=20260312d" />
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 </head>
 <body class="has-sidebar">
@@ -37,6 +37,10 @@
       <li><a href="#competitors" class="sidebar-link" data-page="competitors">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
         Competitors
+      </a></li>
+      <li><a href="#tokenomics" class="sidebar-link" data-page="tokenomics">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 6v12"/><path d="M15.5 9.5l-7 5"/><path d="M8.5 9.5l7 5"/></svg>
+        Tokenomics
       </a></li>
     </ul>
   </nav>
@@ -565,15 +569,125 @@
         </div>
       </div>
     </section>
+
+    <!-- PAGE: Tokenomics Intelligence -->
+    <section id="page-tokenomics" class="page-section">
+      <div class="layout-full">
+
+        <!-- Panel 1: Search / Input -->
+        <div class="panel">
+          <div class="panel-title">Tokenomics Intelligence</div>
+          <div class="tk-search-panel">
+            <div class="tk-search-row">
+              <input type="text" id="tk-search-input" class="search-input" placeholder="Search protocol name or ticker..." style="max-width:320px" />
+              <button class="btn-primary" id="tk-search-btn">Search</button>
+              <select id="tk-load-profile" class="tk-select">
+                <option value="">-- Load Saved --</option>
+              </select>
+              <button class="btn-secondary" id="tk-toggle-manual">Show Manual Entry</button>
+              <button class="btn-primary" id="tk-save-btn">Save Profile</button>
+            </div>
+            <div id="tk-search-results"></div>
+            <div id="tk-loading" style="display:none" class="empty-state">Fetching data from CoinGecko...</div>
+          </div>
+
+          <!-- Manual entry panel (hidden by default) -->
+          <div id="tk-manual-panel" class="form-panel" style="display:none">
+            <div class="form-grid">
+              <div class="form-group"><label>Team Alloc %</label><input type="number" id="tk-m-team" step="any" /></div>
+              <div class="form-group"><label>Investor Alloc %</label><input type="number" id="tk-m-investor" step="any" /></div>
+              <div class="form-group"><label>Foundation Alloc %</label><input type="number" id="tk-m-foundation" step="any" /></div>
+              <div class="form-group"><label>Community Alloc %</label><input type="number" id="tk-m-community" step="any" /></div>
+              <div class="form-group"><label>Airdrop Alloc %</label><input type="number" id="tk-m-airdrop" step="any" /></div>
+              <div class="form-group"><label>12M Unlock Est. (tokens)</label><input type="number" id="tk-m-unlock12m" step="any" /></div>
+              <div class="form-group"><label>TVL (USD)</label><input type="number" id="tk-m-tvl" step="any" /></div>
+              <div class="form-group"><label>Docs URL</label><input type="url" id="tk-m-docs" /></div>
+              <div class="form-group"><label>Tokenomics URL</label><input type="url" id="tk-m-tokenomics" /></div>
+            </div>
+            <div class="form-subtitle">Token Utility Flags</div>
+            <div class="tk-util-grid">
+              <label class="tk-cb"><input type="checkbox" id="tk-u-gas" /> Gas</label>
+              <label class="tk-cb"><input type="checkbox" id="tk-u-staking" /> Staking</label>
+              <label class="tk-cb"><input type="checkbox" id="tk-u-governance" /> Governance</label>
+              <label class="tk-cb"><input type="checkbox" id="tk-u-feeShare" /> Fee Share</label>
+              <label class="tk-cb"><input type="checkbox" id="tk-u-burn" /> Burn</label>
+              <label class="tk-cb"><input type="checkbox" id="tk-u-buyback" /> Buyback</label>
+              <label class="tk-cb"><input type="checkbox" id="tk-u-collateral" /> Collateral</label>
+              <label class="tk-cb"><input type="checkbox" id="tk-u-mandatoryUse" /> Mandatory Use</label>
+              <label class="tk-cb"><input type="checkbox" id="tk-u-validatorSecurity" /> Validator Security</label>
+            </div>
+            <div class="form-actions">
+              <button type="button" class="btn-primary" id="tk-rerun-btn">Re-run Analysis</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Results (hidden until analysis runs) -->
+        <div id="tk-results" style="display:none">
+
+          <!-- Panel 2: Header Card -->
+          <div class="panel"><div class="panel-title">Protocol Overview</div><div id="tk-header-content" class="tk-header-card"></div></div>
+
+          <!-- Panel 3: Raw Data Cards -->
+          <div class="metric-row" id="tk-raw-cards"></div>
+
+          <!-- Panel 4: Calculated Metrics Table -->
+          <div class="panel">
+            <div class="panel-title">Calculated Metrics</div>
+            <div class="table-wrap">
+              <table>
+                <thead><tr>
+                  <th>Metric</th><th>Formula</th><th class="num">Value</th><th>Status</th><th>Interpretation</th><th>Confidence</th>
+                </tr></thead>
+                <tbody id="tk-metrics-tbody"></tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Panel 5: Risk Indicators -->
+          <div class="panel">
+            <div class="panel-title">Risk / Opportunity Indicators</div>
+            <div id="tk-risk-bars" class="tk-risk-container"></div>
+          </div>
+
+          <!-- Panel 6: Score Panel -->
+          <div class="panel">
+            <div class="panel-title">Overall Score</div>
+            <div id="tk-score-content" class="tk-score-panel"></div>
+          </div>
+
+          <!-- Panel 7: Executive Summary -->
+          <div class="panel">
+            <div class="panel-title">Executive Summary</div>
+            <div class="tk-summary"><p id="tk-summary-text" class="tk-summary-text"></p></div>
+          </div>
+
+          <!-- Panel 8: Source Audit -->
+          <div class="panel">
+            <div class="panel-title">Source Audit</div>
+            <div class="table-wrap">
+              <table>
+                <thead><tr><th>Field</th><th class="num">Value</th><th>Source</th><th>URL</th><th>Confidence</th><th>Fetched</th></tr></thead>
+                <tbody id="tk-audit-tbody"></tbody>
+              </table>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </section>
   </div>
 
-  <script src="js/data.js?v=20260311"></script>
-  <script src="js/app.js?v=20260311"></script>
-  <script src="js/router.js?v=20260311"></script>
-  <script src="js/potential-partners.js?v=20260311"></script>
-  <script src="js/simulation.js?v=20260311"></script>
-  <script src="js/infra-costs.js?v=20260311"></script>
-  <script src="js/net-revenue.js?v=20260311"></script>
-  <script src="js/competitors.js?v=20260311"></script>
+  <script src="js/data.js?v=20260312d"></script>
+  <script src="js/app.js?v=20260312d"></script>
+  <script src="js/router.js?v=20260312d"></script>
+  <script src="js/potential-partners.js?v=20260312d"></script>
+  <script src="js/simulation.js?v=20260312d"></script>
+  <script src="js/infra-costs.js?v=20260312d"></script>
+  <script src="js/net-revenue.js?v=20260312d"></script>
+  <script src="js/competitors.js?v=20260312d"></script>
+  <script src="js/tokenomics-calc.js?v=20260312d"></script>
+  <script src="js/tokenomics-score.js?v=20260312d"></script>
+  <script src="js/tokenomics.js?v=20260312d"></script>
 </body>
 </html>

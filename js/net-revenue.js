@@ -118,13 +118,13 @@
           {
             label: "Gross Revenue",
             data: grossData,
-            backgroundColor: "rgba(17,17,17,0.75)",
+            backgroundColor: "rgba(37,99,235,0.6)",
             borderRadius: 4,
           },
           {
             label: "Infra Cost",
             data: costData,
-            backgroundColor: "rgba(240,68,56,0.6)",
+            backgroundColor: "rgba(248,113,113,0.5)",
             borderRadius: 4,
           },
         ],
@@ -134,15 +134,15 @@
         maintainAspectRatio: false,
         plugins: {
           legend: {
-            labels: { font: { family: "'Source Code Pro', monospace", size: 11 } },
+            labels: { color: "#7a7a7a", font: { family: "'Inter', sans-serif", size: 11 } },
           },
           tooltip: {
-            backgroundColor: "#1d2939",
-            titleColor: "#fff",
-            bodyColor: "#fff",
+            backgroundColor: "#1e1e1e",
+            titleColor: "#f0f0f0",
+            bodyColor: "#f0f0f0",
             cornerRadius: 8,
-            titleFont: { family: "'Source Code Pro', monospace" },
-            bodyFont: { family: "'Source Code Pro', monospace" },
+            titleFont: { family: "'Inter', sans-serif" },
+            bodyFont: { family: "'Inter', sans-serif" },
             callbacks: {
               label: (ctx) => ctx.dataset.label + ": $" + Math.round(ctx.raw).toLocaleString(),
             },
@@ -151,13 +151,13 @@
         scales: {
           x: {
             grid: { display: false },
-            ticks: { color: "#667085", font: { family: "'Source Code Pro', monospace", size: 10 }, maxRotation: 45 },
+            ticks: { color: "#7a7a7a", font: { family: "'Inter', sans-serif", size: 10 }, maxRotation: 45 },
           },
           y: {
-            grid: { color: "rgba(0,0,0,0.04)" },
+            grid: { color: "rgba(255,255,255,0.04)" },
             ticks: {
-              color: "#667085",
-              font: { family: "'Source Code Pro', monospace", size: 11 },
+              color: "#7a7a7a",
+              font: { family: "'Inter', sans-serif", size: 11 },
               callback: (v) => "$" + (v >= 1000 ? (v / 1000).toFixed(0) + "K" : v),
             },
           },

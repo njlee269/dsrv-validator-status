@@ -35,6 +35,19 @@
     return n.toLocaleString(undefined, { maximumFractionDigits: 2 });
   }
 
+  const CHART_FONT = "'Inter', sans-serif";
+  const CHART_TOOLTIP = {
+    backgroundColor: "#1e1e1e",
+    titleColor: "#f0f0f0",
+    bodyColor: "#f0f0f0",
+    cornerRadius: 8,
+    padding: 10,
+    titleFont: { family: CHART_FONT },
+    bodyFont: { family: CHART_FONT },
+  };
+  const GRID_COLOR = "rgba(255,255,255,0.04)";
+  const TICK_COLOR = "#7a7a7a";
+
   let delegationChart = null;
   let rewardChart = null;
   let sparklineChart = null;
@@ -60,15 +73,15 @@
         datasets: [{
           label: "Delegation (" + partner.tokenSymbol + ")",
           data: values,
-          borderColor: "#111111",
-          backgroundColor: "rgba(17,17,17,0.06)",
+          borderColor: "#fb923c",
+          backgroundColor: "rgba(251,146,60,0.08)",
           fill: true,
           tension: 0.4,
-          pointRadius: 4,
-          pointBackgroundColor: "#111111",
-          pointBorderColor: "#fff",
+          pointRadius: 3,
+          pointBackgroundColor: "#fb923c",
+          pointBorderColor: "#161616",
           pointBorderWidth: 2,
-          borderWidth: 2.5,
+          borderWidth: 2,
         }],
       },
       options: {
@@ -76,24 +89,18 @@
         maintainAspectRatio: false,
         plugins: {
           legend: { display: false },
-          tooltip: {
-            backgroundColor: "#1d2939",
-            titleColor: "#fff",
-            bodyColor: "#fff",
-            cornerRadius: 8,
-            padding: 10,
-          },
+          tooltip: CHART_TOOLTIP,
         },
         scales: {
           x: {
-            grid: { color: "rgba(0,0,0,0.04)" },
-            ticks: { color: "#667085", font: { family: "'Source Code Pro', monospace", size: 11 } },
+            grid: { color: GRID_COLOR },
+            ticks: { color: TICK_COLOR, font: { family: CHART_FONT, size: 11 } },
           },
           y: {
-            grid: { color: "rgba(0,0,0,0.04)" },
+            grid: { color: GRID_COLOR },
             ticks: {
-              color: "#667085",
-              font: { family: "'Source Code Pro', monospace", size: 11 },
+              color: TICK_COLOR,
+              font: { family: CHART_FONT, size: 11 },
               callback: (v) => formatNum(v),
             },
           },
@@ -129,15 +136,15 @@
         datasets: [{
           label: "Monthly Reward (USD)",
           data: values,
-          borderColor: "#12b76a",
-          backgroundColor: "rgba(18,183,106,0.08)",
+          borderColor: "#fb923c",
+          backgroundColor: "rgba(251,146,60,0.08)",
           fill: true,
           tension: 0.4,
-          pointRadius: 4,
-          pointBackgroundColor: "#12b76a",
-          pointBorderColor: "#fff",
+          pointRadius: 3,
+          pointBackgroundColor: "#fb923c",
+          pointBorderColor: "#161616",
           pointBorderWidth: 2,
-          borderWidth: 2.5,
+          borderWidth: 2,
         }],
       },
       options: {
@@ -146,11 +153,7 @@
         plugins: {
           legend: { display: false },
           tooltip: {
-            backgroundColor: "#1d2939",
-            titleColor: "#fff",
-            bodyColor: "#fff",
-            cornerRadius: 8,
-            padding: 10,
+            ...CHART_TOOLTIP,
             callbacks: {
               label: (ctx) => "$" + (ctx.parsed.y != null ? ctx.parsed.y.toLocaleString(undefined, { maximumFractionDigits: 0 }) : "—"),
             },
@@ -158,14 +161,14 @@
         },
         scales: {
           x: {
-            grid: { color: "rgba(0,0,0,0.04)" },
-            ticks: { color: "#667085", font: { family: "'Source Code Pro', monospace", size: 11 } },
+            grid: { color: GRID_COLOR },
+            ticks: { color: TICK_COLOR, font: { family: CHART_FONT, size: 11 } },
           },
           y: {
-            grid: { color: "rgba(0,0,0,0.04)" },
+            grid: { color: GRID_COLOR },
             ticks: {
-              color: "#667085",
-              font: { family: "'Source Code Pro', monospace", size: 11 },
+              color: TICK_COLOR,
+              font: { family: CHART_FONT, size: 11 },
               callback: (v) => "$" + formatNum(v),
             },
           },
@@ -191,9 +194,9 @@
         labels: labels,
         datasets: [{
           data: prices,
-          borderColor: "#111111",
+          borderColor: "#fb923c",
           borderWidth: 1.5,
-          backgroundColor: "rgba(17,17,17,0.06)",
+          backgroundColor: "rgba(251,146,60,0.06)",
           fill: true,
           tension: 0.4,
           pointRadius: 0,
@@ -204,13 +207,7 @@
         maintainAspectRatio: false,
         plugins: {
           legend: { display: false },
-          tooltip: {
-            backgroundColor: "#1d2939",
-            titleColor: "#fff",
-            bodyColor: "#fff",
-            cornerRadius: 6,
-            padding: 8,
-          },
+          tooltip: CHART_TOOLTIP,
         },
         scales: {
           x: { display: false },
