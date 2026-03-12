@@ -171,41 +171,21 @@ body.has-sidebar { display: flex; }
   overflow: hidden;
   display: flex;
   flex-direction: column;
-  transition: background 0.18s, border-color 0.18s, color 0.18s;
+  transition: border-color 0.2s;
 }
 
-.panel:hover {
+.panel:hover { border-color: var(--border-light); }
+
+/* X-ray effect: Delegation Change panel only */
+.panel-tiles {
+  transition: background 0.18s, border-color 0.18s, color 0.18s;
+}
+.panel-tiles:hover {
   background: #ffffff;
   border-color: #ffffff;
   color: #0a0a0a;
 }
-.panel:hover .panel-title,
-.panel:hover .metric-label,
-.panel:hover .metric-value,
-.panel:hover td,
-.panel:hover th,
-.panel:hover .tk-summary-text,
-.panel:hover .tk-hdr-name,
-.panel:hover .tk-hdr-sym,
-.panel:hover .tk-dim-label,
-.panel:hover .tk-risk-label,
-.panel:hover .tk-partnership,
-.panel:hover .tk-confidence,
-.panel:hover .tk-signal-counts,
-.panel:hover .tk-interp,
-.panel:hover .tk-formula,
-.panel:hover .tk-dim-val,
-.panel:hover .tk-proj-name,
-.panel:hover .tk-proj-sym,
-.panel:hover .tk-proj-date,
-.panel:hover label,
-.panel:hover .form-subtitle,
-.panel:hover .empty-state {
-  color: #0a0a0a;
-}
-.panel:hover .panel-title { border-bottom-color: #ddd; }
-.panel:hover tr { border-color: #e0e0e0; }
-.panel:hover .tk-score-num { color: inherit; }
+.panel-tiles:hover .panel-title { color: #0a0a0a; border-bottom-color: #ddd; }
 
 .panel-aum { min-height: 250px; }
 .panel-tiles { flex: 0 0 auto; }
@@ -401,14 +381,23 @@ a:hover { color: var(--accent); text-decoration: none; }
 }
 
 .tile:hover {
+  background: rgba(37,99,235,0.06);
+  border-color: rgba(37,99,235,0.3);
+  transform: translateY(-2px);
+  box-shadow: 0 0 16px 2px rgba(37,99,235,0.15), 0 4px 12px rgba(0,0,0,0.3);
+}
+
+/* X-ray on tiles only inside Delegation Change panel */
+.panel-tiles .tile:hover {
   background: #ffffff;
   border-color: #ffffff;
   color: #0a0a0a;
   transform: translateY(-2px);
   box-shadow: 0 4px 16px rgba(0,0,0,0.25);
 }
-.tile:hover .tile-name,
-.tile:hover .tile-price { color: #0a0a0a; }
+.panel-tiles .tile:hover .tile-name,
+.panel-tiles .tile:hover .tile-price,
+.panel-tiles .tile:hover .tile-change { color: #0a0a0a; }
 
 .tile-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 2px; }
 
@@ -453,16 +442,10 @@ a:hover { color: var(--accent); text-decoration: none; }
   flex-direction: column;
   align-items: center;
   gap: 5px;
-  transition: background 0.18s, border-color 0.18s, color 0.18s;
+  transition: border-color 0.2s;
 }
 
-.metric-box:hover {
-  background: #ffffff;
-  border-color: #ffffff;
-  color: #0a0a0a;
-}
-.metric-box:hover .metric-label,
-.metric-box:hover .metric-value { color: #0a0a0a; }
+.metric-box:hover { border-color: var(--border-light); }
 
 .metric-label {
   font-size: 0.64rem; text-transform: uppercase; letter-spacing: 0.06em;
@@ -797,11 +780,7 @@ td .action-btns button { padding: 4px 10px; font-size: 0.66rem; }
   cursor: default;
 }
 .tk-proj-row:last-child { border-bottom: none; }
-.tk-proj-row:hover { background: #ffffff; color: #0a0a0a; }
-.tk-proj-row:hover .tk-proj-name,
-.tk-proj-row:hover .tk-proj-sym,
-.tk-proj-row:hover .tk-proj-date,
-.tk-proj-row:hover .tk-proj-score { color: #0a0a0a; }
+.tk-proj-row:hover { background: var(--bg-card-hover); }
 .tk-proj-icon { width: 28px; height: 28px; border-radius: 50%; flex-shrink: 0; background: var(--bg-input); display: flex; align-items: center; justify-content: center; font-size: 0.6rem; font-weight: 700; color: var(--text-dim); overflow: hidden; }
 .tk-proj-icon img { width: 100%; height: 100%; }
 .tk-proj-info { flex: 1; min-width: 0; }
