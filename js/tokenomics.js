@@ -85,12 +85,109 @@
     await fetch(PROFILES_API, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(profiles) });
   }
 
+  /* ── Direct browser fallbacks (used when server API returns 404) ── */
+
+  async function searchCoinsDirect(query) {
+    var r = await fetch("https://api.coingecko.com/api/v3/search?query=" + encodeURIComponent(query), {
+      signal: AbortSignal.timeout(12000),
+    });
+    if (!r.ok) throw new Error("CoinGecko search failed (status " + r.status + ")");
+    var data = await r.json();
+    return (data.coins || []).slice(0, 12).map(function (c) {
+      return { id: c.id, name: c.name, symbol: c.symbol, thumb: c.thumb, marketCapRank: c.market_cap_rank, source: "coingecko" };
+    });
+  }
+
+  function directSrcRef(value, source, sourceUrl) {
+    return { value: value != null ? value : null, source: source, sourceUrl: sourceUrl || null, confidence: value != null ? "high" : "none", fetchedAt: new Date().toISOString(), notes: null };
+  }
+
+  async function fetchCoinDataDirect(id) {
+    var cgUrl = "https://api.coingecko.com/api/v3/coins/" + encodeURIComponent(id) +
+      "?localization=false&tickers=false&community_data=false&developer_data=false&sparkline=false";
+    var cgResp = await fetch(cgUrl, { signal: AbortSignal.timeout(30000) });
+    if (!cgResp.ok) throw new Error("CoinGecko fetch failed (status " + cgResp.status + ")");
+    var cgRaw = await cgResp.json();
+    var md = cgRaw.market_data || {};
+    var cgPageUrl = "https://www.coingecko.com/en/coins/" + id;
+    var name = cgRaw.name || "";
+    var symbol = (cgRaw.symbol || "").toUpperCase();
+
+    /* Try DefiLlama for TVL */
+    var dlTvl = null;
+    var dlUrl = null;
+    try {
+      var dlResp = await fetch("https://api.llama.fi/protocols", { signal: AbortSignal.timeout(10000) });
+      if (dlResp.ok) {
+        var dlProtos = await dlResp.json();
+        var nameLow = name.toLowerCase();
+        var match = dlProtos.find(function (p) {
+          return p.gecko_id === id || p.name.toLowerCase() === nameLow;
+        });
+        if (match) {
+          dlUrl = "https://defillama.com/protocol/" + match.slug;
+          if (match.tvl != null) dlTvl = match.tvl;
+        }
+      }
+    } catch (e) { /* ignore DefiLlama errors */ }
+
+    return {
+      identity: {
+        coingeckoId: id, defillamaSlug: null, defillamaType: null,
+        name: name, symbol: symbol, categories: cgRaw.categories || [],
+        homepage: (cgRaw.links && cgRaw.links.homepage && cgRaw.links.homepage[0]) || null,
+        docsUrl: null, tokenomicsUrl: null,
+        explorerUrl: (cgRaw.links && cgRaw.links.blockchain_site && cgRaw.links.blockchain_site[0]) || null,
+        imageThumb: (cgRaw.image && cgRaw.image.small) || null,
+        genesisDate: cgRaw.genesis_date || null,
+      },
+      market: {
+        price: directSrcRef(md.current_price && md.current_price.usd, "coingecko", cgPageUrl),
+        marketCap: directSrcRef(md.market_cap && md.market_cap.usd, "coingecko", cgPageUrl),
+        fdv: directSrcRef(md.fully_diluted_valuation && md.fully_diluted_valuation.usd, "coingecko", cgPageUrl),
+        circulatingSupply: directSrcRef(md.circulating_supply, "coingecko", cgPageUrl),
+        totalSupply: directSrcRef(md.total_supply, "coingecko", cgPageUrl),
+        maxSupply: directSrcRef(md.max_supply, "coingecko", cgPageUrl),
+        volume24h: directSrcRef(md.total_volume && md.total_volume.usd, "coingecko", cgPageUrl),
+        ath: directSrcRef(md.ath && md.ath.usd, "coingecko", cgPageUrl),
+        athDate: directSrcRef(md.ath_date && md.ath_date.usd, "coingecko", cgPageUrl),
+        athMarketCap: directSrcRef(null, "coingecko", cgPageUrl),
+        priceChange24h: directSrcRef(md.price_change_percentage_24h, "coingecko", cgPageUrl),
+        priceChange7d: directSrcRef(md.price_change_percentage_7d, "coingecko", cgPageUrl),
+        priceChange30d: directSrcRef(md.price_change_percentage_30d, "coingecko", cgPageUrl),
+      },
+      allocations: {
+        teamPct: directSrcRef(null, "coingecko", cgPageUrl),
+        investorPct: directSrcRef(null, "coingecko", cgPageUrl),
+        foundationPct: directSrcRef(null, "coingecko", cgPageUrl),
+        communityPct: directSrcRef(null, "coingecko", cgPageUrl),
+        airdropPct: directSrcRef(null, "coingecko", cgPageUrl),
+      },
+      unlocks: {
+        nextUnlockAmount: directSrcRef(null, "none", null),
+        nextUnlockDate: directSrcRef(null, "none", null),
+        tokens12mEstimate: directSrcRef(null, "none", null),
+      },
+      fundamentals: {
+        tvl: directSrcRef(dlTvl, "defillama", dlUrl),
+        protocolFees: directSrcRef(null, "defillama", dlUrl),
+        revenue: directSrcRef(null, "defillama", dlUrl),
+      },
+      utility: { gas: false, staking: false, governance: false, feeShare: false, burn: false, buyback: false, collateral: false, mandatoryUse: false, validatorSecurity: false },
+      sources: { coingecko: true, defillama: dlTvl != null, coinmarketcap: false },
+      supplyType: md.max_supply != null ? "capped" : (md.total_supply != null ? "dynamic" : "unknown"),
+    };
+  }
+
+  /* ── API calls (server proxy with direct fallback on 404) ── */
+
   async function searchCoins(query) {
     var controller = new AbortController();
     var timer = setTimeout(function () { controller.abort(); }, 15000);
     try {
       var r = await fetch("/api/tokenomics/search?q=" + encodeURIComponent(query), { signal: controller.signal });
       clearTimeout(timer);
+      if (r.status === 404) return await searchCoinsDirect(query);
       if (!r.ok) {
         var err = await r.json().catch(function () { return {}; });
         throw new Error(err.error || "Search failed (status " + r.status + ")");
@@ -109,6 +206,7 @@
     try {
       var r = await fetch("/api/tokenomics/coin/" + encodeURIComponent(id), { signal: controller.signal });
       clearTimeout(timer);
+      if (r.status === 404) return await fetchCoinDataDirect(id);
       if (!r.ok) throw new Error("Fetch failed: " + r.status);
       return await r.json();
     } catch (e) {
