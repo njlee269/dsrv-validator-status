@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>DSRV Validator Status</title>
-  <link rel="stylesheet" href="css/styles.css?v=20260312g" />
+  <link rel="stylesheet" href="css/styles.css?v=20260312h" />
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 </head>
 <body class="has-sidebar">
@@ -421,86 +421,170 @@
     <!-- PAGE: Infra Costs -->
     <section id="page-infra-costs" class="page-section">
       <div class="layout-full">
+
+        <!-- Summary Cards -->
         <div class="metric-row" id="infra-summary-cards">
           <div class="metric-box">
-            <div class="metric-label">Current Partners Cost / mo</div>
+            <div class="metric-label">Current Partners / mo</div>
             <div class="metric-value" id="infra-total-current">—</div>
           </div>
           <div class="metric-box">
-            <div class="metric-label">Potential Partners Cost / mo</div>
+            <div class="metric-label">Potential Partners / mo</div>
             <div class="metric-value" id="infra-total-potential">—</div>
           </div>
           <div class="metric-box">
-            <div class="metric-label">Total Infra Cost / mo</div>
+            <div class="metric-label">Total Infra / mo</div>
             <div class="metric-value" id="infra-total-all">—</div>
           </div>
+          <div class="metric-box">
+            <div class="metric-label">Total Infra / yr</div>
+            <div class="metric-value" id="infra-total-annual">—</div>
+          </div>
         </div>
+
+        <!-- ── Editor Panel ── -->
+        <div class="panel" id="infra-editor-panel" style="display:none">
+          <div class="panel-title" id="infra-editor-title">Add Chain Infrastructure</div>
+
+          <!-- URL Scraper -->
+          <div class="ic-scrape-row">
+            <input type="url" id="infra-scrape-url" class="ic-scrape-input"
+              placeholder="Paste hardware requirements URL (docs / whitepaper / website)…" />
+            <button class="btn-secondary" id="btn-infra-scrape">Auto-fill from URL</button>
+            <span id="infra-scrape-status" class="scrape-status"></span>
+          </div>
+
+          <!-- Chain meta -->
+          <div class="ic-meta-row">
+            <div class="form-group">
+              <label>Chain Name *</label>
+              <input type="text" id="inf-chain" placeholder="e.g. XDC" />
+            </div>
+            <div class="form-group">
+              <label>Partner Status</label>
+              <select id="inf-is-current">
+                <option value="true">Current Partner</option>
+                <option value="false">Potential Partner</option>
+              </select>
+            </div>
+            <div class="form-group ic-meta-notes">
+              <label>Notes</label>
+              <input type="text" id="inf-notes" placeholder="Optional notes" />
+            </div>
+          </div>
+
+          <!-- Node spec table -->
+          <div class="ic-nodes-section">
+            <div class="ic-nodes-header">
+              <span style="font-weight:600;font-size:0.82rem;color:var(--text-dim)">Node Specifications</span>
+              <span style="font-size:0.7rem;color:var(--text-muted)">Formula: ($/hr × 730) + (Storage GB × $0.10) + (Bandwidth GB × $0.09)</span>
+              <button class="btn-secondary btn-sm" id="btn-add-node">+ Add Node Type</button>
+            </div>
+            <div class="table-wrap" style="overflow-x:auto">
+              <table class="ic-node-table">
+                <thead>
+                  <tr>
+                    <th>Node Type</th>
+                    <th>vCPU</th>
+                    <th>RAM (GB)</th>
+                    <th>Storage (GB)</th>
+                    <th>IOPS</th>
+                    <th>BW (GB/mo)</th>
+                    <th>Provider</th>
+                    <th>Instance</th>
+                    <th>$/hr</th>
+                    <th>Count</th>
+                    <th class="num">Monthly</th>
+                    <th></th>
+                  </tr>
+                </thead>
+                <tbody id="infra-node-rows"></tbody>
+                <tfoot>
+                  <tr>
+                    <td colspan="10" style="text-align:right;font-weight:600;font-size:0.8rem;color:var(--text-dim)">
+                      Total Monthly Cost:
+                    </td>
+                    <td class="num" id="infra-editor-total" style="font-weight:800;color:var(--accent);font-size:0.95rem">$0</td>
+                    <td></td>
+                  </tr>
+                </tfoot>
+              </table>
+            </div>
+          </div>
+
+          <div class="form-actions">
+            <button class="btn-primary" id="btn-save-infra">Save Chain</button>
+            <button class="btn-secondary" id="btn-cancel-infra">Cancel</button>
+          </div>
+        </div>
+
+        <!-- ── Rankings Panel ── -->
         <div class="panel">
           <div class="panel-title">
-            Infrastructure Costs
-            <button class="btn-primary" id="btn-add-infra">+ Add Cost Entry</button>
-          </div>
-          <div id="infra-form-wrap" class="form-panel" style="display:none">
-            <form id="infra-form" class="crud-form">
-              <input type="hidden" id="inf-id" />
-              <div class="form-grid">
-                <div class="form-group">
-                  <label for="inf-chain">Chain Name *</label>
-                  <input type="text" id="inf-chain" required />
-                </div>
-                <div class="form-group">
-                  <label for="inf-is-current">Partner Status</label>
-                  <select id="inf-is-current">
-                    <option value="true">Current Partner</option>
-                    <option value="false">Potential Partner</option>
-                  </select>
-                </div>
-                <div class="form-group">
-                  <label for="inf-provider">Provider</label>
-                  <select id="inf-provider">
-                    <option value="AWS">AWS</option>
-                    <option value="GCP">GCP</option>
-                    <option value="Azure">Azure</option>
-                    <option value="Bare Metal">Bare Metal</option>
-                    <option value="Other">Other</option>
-                  </select>
-                </div>
-                <div class="form-group">
-                  <label for="inf-instance">Instance Type</label>
-                  <input type="text" id="inf-instance" placeholder="e.g. m5.2xlarge" />
-                </div>
-                <div class="form-group">
-                  <label for="inf-cost">Monthly Cost (USD) *</label>
-                  <input type="number" id="inf-cost" step="any" required />
-                </div>
-                <div class="form-group form-group-wide">
-                  <label for="inf-notes">Notes</label>
-                  <textarea id="inf-notes" rows="2"></textarea>
-                </div>
+            Infrastructure Rankings — by Monthly Cost
+            <div style="display:flex;gap:8px;align-items:center">
+              <div class="ic-tabs" id="infra-filter-tabs">
+                <button class="ic-tab active" data-filter="all">All</button>
+                <button class="ic-tab" data-filter="current">Current</button>
+                <button class="ic-tab" data-filter="potential">Potential</button>
               </div>
-              <div class="form-actions">
-                <button type="submit" class="btn-primary">Save</button>
-                <button type="button" class="btn-secondary" id="btn-cancel-infra">Cancel</button>
-              </div>
-            </form>
+              <button class="btn-primary" id="btn-add-infra">+ Add Chain</button>
+            </div>
           </div>
           <div class="table-wrap">
-            <table id="infra-table">
+            <table id="infra-rankings-table">
               <thead>
                 <tr>
+                  <th>#</th>
                   <th>Chain</th>
                   <th>Status</th>
-                  <th>Provider</th>
-                  <th>Instance</th>
+                  <th>Nodes</th>
                   <th class="num">Monthly Cost</th>
-                  <th>Notes</th>
+                  <th class="num">Annual Cost</th>
                   <th>Actions</th>
                 </tr>
               </thead>
-              <tbody id="infra-tbody"></tbody>
+              <tbody id="infra-rankings-tbody"></tbody>
             </table>
           </div>
         </div>
+
+        <!-- ── Detail Panel ── -->
+        <div class="panel" id="infra-detail-panel" style="display:none">
+          <div class="panel-title" id="infra-detail-title">Node Breakdown</div>
+          <div class="table-wrap" style="overflow-x:auto">
+            <table id="infra-detail-table">
+              <thead>
+                <tr>
+                  <th>Node Type</th>
+                  <th>vCPU</th>
+                  <th>RAM</th>
+                  <th>Storage</th>
+                  <th>BW/mo</th>
+                  <th>Provider</th>
+                  <th>Instance</th>
+                  <th>$/hr</th>
+                  <th>Count</th>
+                  <th class="num">Instance Cost</th>
+                  <th class="num">Storage Cost</th>
+                  <th class="num">BW Cost</th>
+                  <th class="num">Monthly Total</th>
+                </tr>
+              </thead>
+              <tbody id="infra-detail-tbody"></tbody>
+              <tfoot>
+                <tr>
+                  <td colspan="12" style="text-align:right;font-weight:600;font-size:0.8rem;color:var(--text-dim)">Total:</td>
+                  <td class="num" id="infra-detail-total" style="font-weight:800;color:var(--accent)"></td>
+                </tr>
+              </tfoot>
+            </table>
+          </div>
+          <div style="margin-top:10px">
+            <button class="btn-secondary btn-sm" id="btn-close-detail">Close</button>
+          </div>
+        </div>
+
       </div>
     </section>
 
@@ -769,16 +853,16 @@
     </section>
   </div>
 
-  <script src="js/data.js?v=20260312g"></script>
-  <script src="js/app.js?v=20260312g"></script>
-  <script src="js/router.js?v=20260312g"></script>
-  <script src="js/potential-partners.js?v=20260312g"></script>
-  <script src="js/simulation.js?v=20260312g"></script>
-  <script src="js/infra-costs.js?v=20260312g"></script>
-  <script src="js/net-revenue.js?v=20260312g"></script>
-  <script src="js/competitors.js?v=20260312g"></script>
-  <script src="js/tokenomics-calc.js?v=20260312g"></script>
-  <script src="js/tokenomics-score.js?v=20260312g"></script>
-  <script src="js/tokenomics.js?v=20260312g"></script>
+  <script src="js/data.js?v=20260312h"></script>
+  <script src="js/app.js?v=20260312h"></script>
+  <script src="js/router.js?v=20260312h"></script>
+  <script src="js/potential-partners.js?v=20260312h"></script>
+  <script src="js/simulation.js?v=20260312h"></script>
+  <script src="js/infra-costs.js?v=20260312h"></script>
+  <script src="js/net-revenue.js?v=20260312h"></script>
+  <script src="js/competitors.js?v=20260312h"></script>
+  <script src="js/tokenomics-calc.js?v=20260312h"></script>
+  <script src="js/tokenomics-score.js?v=20260312h"></script>
+  <script src="js/tokenomics.js?v=20260312h"></script>
 </body>
 </html>

@@ -478,6 +478,87 @@ app.post("/api/tokenomics/refresh", async (req, res) => {
   res.json({ refreshed, total: profiles.length });
 });
 
+/* ═══════════════════════════════════════
+   Infra scraper — fetch a URL and extract hardware specs
+   GET /api/infra/scrape?url=<encoded-url>
+   ═══════════════════════════════════════ */
+
+app.get("/api/infra/scrape", async (req, res) => {
+  const url = req.query.url;
+  if (!url || !/^https?:\/\//.test(url)) {
+    return res.status(400).json({ error: "Invalid URL — must start with http:// or https://" });
+  }
+
+  let html;
+  try {
+    const resp = await fetch(url, {
+      headers: {
+        "User-Agent": "Mozilla/5.0 (compatible; DSRVBot/1.0; +https://dsrv.kr)",
+        "Accept": "text/html,application/xhtml+xml,*/*",
+      },
+      signal: AbortSignal.timeout(15000),
+    });
+    if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+    html = await resp.text();
+  } catch (e) {
+    return res.status(502).json({ error: "Could not fetch URL: " + e.message });
+  }
+
+  // Strip HTML to plain text
+  const text = html
+    .replace(/<script[\s\S]*?<\/script>/gi, " ")
+    .replace(/<style[\s\S]*?<\/style>/gi, " ")
+    .replace(/<[^>]+>/g, " ")
+    .replace(/&nbsp;/gi, " ")
+    .replace(/&gt;/gi, ">").replace(/&lt;/gi, "<")
+    .replace(/\s+/g, " ");
+
+  const specs = {};
+
+  // vCPU / CPU cores
+  const cpuM =
+    text.match(/(\d+)\s*[-–]?\s*(?:v?CPU|vCores?|CPU\s+Cores?|logical\s+processors?)/i) ||
+    text.match(/(?:v?CPU|CPU\s+Cores?|Cores?)\s*[:\-–]\s*(\d+)/i) ||
+    text.match(/(\d+)\s*cores?/i);
+  if (cpuM) specs.vcpu = parseInt(cpuM[1]);
+
+  // RAM / Memory
+  const ramM =
+    text.match(/(\d+)\s*GB\s*(?:RAM|Memory|mem)/i) ||
+    text.match(/(?:RAM|Memory|mem)\s*[:\-–]\s*(\d+)\s*GB/i) ||
+    text.match(/(\d+)\s*GiB\s*(?:RAM|Memory)/i);
+  if (ramM) specs.ramGb = parseInt(ramM[1]);
+
+  // Storage / Disk
+  const storM =
+    text.match(/(\d+)\s*(TB|GB)\s*(?:SSD|NVMe|HDD|storage|disk|space)/i) ||
+    text.match(/(?:storage|disk|SSD|NVMe|HDD)\s*[:\-–]\s*(\d+)\s*(TB|GB)/i) ||
+    text.match(/(\d+)\s*(TB|GB)\s*(?:of\s+)?(?:free\s+)?(?:disk|storage)/i);
+  if (storM) {
+    let val = parseInt(storM[1]);
+    if (/TB/i.test(storM[2])) val *= 1024;
+    specs.storageGb = val;
+  }
+
+  // IOPS
+  const iopsM =
+    text.match(/(\d[\d,]*)\s*IOPS/i) ||
+    text.match(/IOPS\s*[:\-–]\s*(\d[\d,]*)/i);
+  if (iopsM) specs.iops = parseInt(iopsM[1].replace(/,/g, ""));
+
+  // Bandwidth (GB/month)
+  const bwM =
+    text.match(/(\d+)\s*(?:GB|TB)\s*(?:\/\s*(?:month|mo))\s*(?:bandwidth|egress|transfer)?/i) ||
+    text.match(/(?:bandwidth|egress|transfer)\s*[:\-–]\s*(\d+)\s*(?:GB|TB)/i);
+  if (bwM) {
+    let val = parseInt(bwM[1]);
+    if (/TB/i.test(bwM[0])) val *= 1024;
+    specs.bandwidthGbMonth = val;
+  }
+
+  res.json({ specs, excerpt: text.slice(0, 1500) });
+});
+
 app.listen(PORT, () => {
   console.log(`DSRV Dashboard running at http://localhost:${PORT}`);
 });
