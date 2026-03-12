@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>DSRV Validator Status</title>
-  <link rel="stylesheet" href="css/styles.css?v=20260312f" />
+  <link rel="stylesheet" href="css/styles.css?v=20260312g" />
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 </head>
 <body class="has-sidebar">
@@ -258,112 +258,163 @@
       </div>
     </section>
 
-    <!-- PAGE: Simulation -->
     <section id="page-simulation" class="page-section">
       <div class="layout-full">
+
+        <!-- Panel 1: Inputs -->
         <div class="panel">
-          <div class="panel-title">Revenue Simulation Calculator</div>
-          <div class="sim-container">
-            <div class="sim-inputs">
-              <div class="form-group">
-                <label for="sim-source">Load From</label>
-                <select id="sim-source">
-                  <option value="">-- Custom --</option>
-                </select>
-              </div>
-              <div class="form-grid">
-                <div class="form-group">
-                  <label for="sim-name">Protocol Name</label>
-                  <input type="text" id="sim-name" />
-                </div>
-                <div class="form-group">
-                  <label for="sim-token">Token Symbol</label>
-                  <input type="text" id="sim-token" />
-                </div>
-                <div class="form-group">
-                  <label for="sim-coingecko">CoinGecko ID</label>
-                  <input type="text" id="sim-coingecko" />
-                </div>
-                <div class="form-group">
-                  <label for="sim-price">Token Price (USD)</label>
-                  <input type="number" id="sim-price" step="any" />
-                </div>
-                <div class="form-group">
-                  <label for="sim-fdv">FDV (USD)</label>
-                  <input type="number" id="sim-fdv" step="any" />
-                </div>
-                <div class="form-group">
-                  <label for="sim-circ-supply">Circulating Supply</label>
-                  <input type="number" id="sim-circ-supply" step="any" />
-                </div>
-                <div class="form-group">
-                  <label for="sim-total-supply">Total Supply</label>
-                  <input type="number" id="sim-total-supply" step="any" />
-                </div>
-                <div class="form-group">
-                  <label for="sim-staking-ratio">Staking Ratio %</label>
-                  <input type="number" id="sim-staking-ratio" step="any" value="50" />
-                </div>
-                <div class="form-group">
-                  <label for="sim-dsrv-share">DSRV Delegation Share %</label>
-                  <input type="number" id="sim-dsrv-share" step="any" value="1" />
-                </div>
-                <div class="form-group">
-                  <label for="sim-apr">APR %</label>
-                  <input type="number" id="sim-apr" step="any" value="10" />
-                </div>
-                <div class="form-group">
-                  <label for="sim-commission">Commission %</label>
-                  <input type="number" id="sim-commission" step="any" value="10" />
-                </div>
-              </div>
-              <div class="form-actions">
-                <button type="button" class="btn-primary" id="btn-sim-calc">Calculate</button>
-                <button type="button" class="btn-secondary" id="btn-sim-reset">Reset</button>
-              </div>
+          <div class="panel-title">
+            Validator Revenue Simulator
+            <div style="display:flex;gap:8px;align-items:center">
+              <label style="font-size:0.7rem;font-weight:500;color:var(--text-dim)">Load From</label>
+              <select id="sim-source" class="tk-select" style="min-width:180px;font-size:0.72rem">
+                <option value="">-- Potential Partners --</option>
+              </select>
             </div>
-            <div class="sim-results" id="sim-results">
-              <div class="metric-row">
-                <div class="metric-box">
-                  <div class="metric-label">Total Staked Tokens</div>
-                  <div class="metric-value" id="sim-r-staked">—</div>
-                </div>
-                <div class="metric-box">
-                  <div class="metric-label">DSRV Delegation</div>
-                  <div class="metric-value" id="sim-r-delegation">—</div>
-                </div>
-                <div class="metric-box">
-                  <div class="metric-label">AUM (USD)</div>
-                  <div class="metric-value" id="sim-r-aum">—</div>
-                </div>
-                <div class="metric-box">
-                  <div class="metric-label">Monthly Reward</div>
-                  <div class="metric-value" id="sim-r-monthly">—</div>
-                </div>
-                <div class="metric-box">
-                  <div class="metric-label">Annual Reward</div>
-                  <div class="metric-value" id="sim-r-annual">—</div>
+          </div>
+          <div class="sim-input-area">
+            <div class="form-subtitle">Chain Info</div>
+            <div class="form-grid">
+              <div class="form-group"><label>Protocol / Chain</label><input type="text" id="sim-name" placeholder="e.g. XDC" /></div>
+              <div class="form-group"><label>Token Symbol</label><input type="text" id="sim-token" placeholder="e.g. XDC" /></div>
+              <div class="form-group">
+                <label>CoinGecko ID</label>
+                <div style="display:flex;gap:6px">
+                  <input type="text" id="sim-coingecko" placeholder="e.g. xdce-crowd-sale" style="flex:1" />
+                  <button class="btn-secondary btn-sm" id="btn-fetch-price">Fetch Price</button>
                 </div>
               </div>
+              <div class="form-group"><label>Token Price (USD)</label><input type="number" id="sim-price" step="any" placeholder="Auto-filled" /></div>
+              <div class="form-group">
+                <label>USD / KRW Rate</label>
+                <div style="display:flex;gap:6px">
+                  <input type="number" id="sim-krw-rate" step="any" placeholder="e.g. 1350" style="flex:1" />
+                  <button class="btn-secondary btn-sm" id="btn-fetch-krw">Auto</button>
+                </div>
+              </div>
+              <div class="form-group"><label>Min Self-Stake Note</label><input type="text" id="sim-selfstake-note" placeholder="e.g. 10M XDC required" /></div>
+            </div>
+            <div class="form-subtitle">Economics</div>
+            <div class="form-grid">
+              <div class="form-group"><label>Self-Stake / Min Req (tokens)</label><input type="number" id="sim-self-stake" step="any" placeholder="e.g. 10000000" /></div>
+              <div class="form-group"><label>Partner Delegation (tokens)</label><input type="number" id="sim-delegation" step="any" placeholder="Rank ~10 validator amount" /></div>
+              <div class="form-group"><label>APR %</label><input type="number" id="sim-apr" step="any" value="10" /></div>
+              <div class="form-group"><label>Commission %</label><input type="number" id="sim-commission" step="any" value="10" /></div>
+              <div class="form-group"><label>Op Cost / Month (USD) <span style="font-size:0.6rem;color:var(--text-muted)">auto from Infra Costs</span></label><input type="number" id="sim-op-cost" step="any" placeholder="Auto-linked by chain name" /></div>
+              <div class="form-group"><label>Op Payment / Month (USD) <span style="font-size:0.6rem;color:var(--text-muted)">optional flat fee from partner</span></label><input type="number" id="sim-op-payment" step="any" /></div>
+            </div>
+            <div class="form-actions">
+              <button type="button" class="btn-primary" id="btn-sim-calc">Calculate</button>
+              <button type="button" class="btn-secondary" id="btn-sim-reset">Reset</button>
             </div>
           </div>
         </div>
+
+        <!-- Panel 2: Main Comparison Table -->
+        <div class="panel" id="sim-results-panel" style="display:none">
+          <div class="panel-title">Revenue Analysis</div>
+          <div style="overflow-x:auto">
+            <table class="sim-calc-table">
+              <thead><tr><th></th><th>SELF STAKE REQ</th><th>IF DELEGATED</th></tr></thead>
+              <tbody>
+                <tr><td>DELEGATION</td><td id="sc-self-deleg">—</td><td id="sc-del-deleg">—</td></tr>
+                <tr><td>APR</td><td id="sc-self-apr">—</td><td id="sc-del-apr">—</td></tr>
+                <tr><td>COMMISSION</td><td id="sc-self-comm">—</td><td id="sc-del-comm">—</td></tr>
+                <tr><td>TOKEN PRICE</td><td id="sc-self-price">—</td><td id="sc-del-price">—</td></tr>
+                <tr class="sim-highlight-row"><td>ANNUAL REV ($)</td><td id="sc-self-rev-usd">—</td><td id="sc-del-rev-usd">—</td></tr>
+                <tr class="sim-highlight-row"><td>ANNUAL REV (₩)</td><td id="sc-self-rev-krw">—</td><td id="sc-del-rev-krw">—</td></tr>
+                <tr class="sim-net-row"><td>NET REV</td><td id="sc-self-net">—</td><td id="sc-del-net">—</td></tr>
+                <tr><td>AUM</td><td id="sc-self-aum">—</td><td id="sc-del-aum">—</td></tr>
+                <tr><td>MONTHLY REV ($)</td><td id="sc-self-mo-usd">—</td><td id="sc-del-mo-usd">—</td></tr>
+                <tr><td>MONTHLY NET</td><td id="sc-self-mo-net">—</td><td id="sc-del-mo-net">—</td></tr>
+                <tr><td>STAKE IN ($)</td><td id="sc-self-stake-usd">—</td><td id="sc-del-stake-usd">—</td></tr>
+                <tr><td>STAKE IN (₩)</td><td id="sc-self-stake-krw">—</td><td id="sc-del-stake-krw">—</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Panel 3: Additional -->
+        <div class="panel" id="sim-additional-panel" style="display:none">
+          <div class="panel-title">Additional Upside (Delegated vs Self-Stake)</div>
+          <div style="overflow-x:auto">
+            <table class="sim-calc-table">
+              <tbody>
+                <tr><td>ADDITIONAL TOKEN</td><td id="sc-add-token">—</td></tr>
+                <tr><td>ADDITIONAL REV ($)</td><td id="sc-add-rev-usd">—</td></tr>
+                <tr><td>ADDITIONAL REV (₩)</td><td id="sc-add-rev-krw">—</td></tr>
+                <tr><td>ADDITIONAL AUM</td><td id="sc-add-aum">—</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Panel 4: Operation Cost -->
+        <div class="panel" id="sim-opex-panel" style="display:none">
+          <div class="panel-title">Validator Operation Cost</div>
+          <div style="overflow-x:auto">
+            <table class="sim-calc-table">
+              <thead><tr><th>VALIDATOR</th><th>ANNUAL</th><th>MONTHLY</th></tr></thead>
+              <tbody>
+                <tr class="sim-cost-row"><td>OPERATION COST</td><td id="sc-op-annual">—</td><td id="sc-op-monthly">—</td></tr>
+                <tr class="sim-payment-row"><td>OPERATION PAYMENT</td><td id="sc-pay-annual">—</td><td id="sc-pay-monthly">—</td></tr>
+                <tr><td>YEARS TO BEP (Self-Stake)</td><td id="sc-years-self" colspan="2">—</td></tr>
+                <tr><td>YEARS TO BEP (Delegated)</td><td id="sc-years-del" colspan="2">—</td></tr>
+                <tr><td>STAKE IN — Self (₩)</td><td id="sc-stakein-self-krw" colspan="2">—</td></tr>
+                <tr><td>STAKE IN — Delegated (₩)</td><td id="sc-stakein-del-krw" colspan="2">—</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Panel 5: Multi-Year Projection -->
+        <div class="panel" id="sim-projection-panel" style="display:none">
+          <div class="panel-title">
+            Multi-Year Revenue Projection
+            <div style="display:flex;gap:6px;align-items:center">
+              <label style="font-size:0.7rem;color:var(--text-dim)">Start Year</label>
+              <input type="number" id="sim-start-year" value="2025" style="width:72px;font-size:0.72rem;padding:4px 6px;background:var(--bg-input);border:1px solid var(--border);border-radius:4px;color:var(--text)" />
+            </div>
+          </div>
+          <div style="overflow-x:auto">
+            <table class="sim-calc-table">
+              <thead>
+                <tr><th></th><th id="sim-yr-head-0">Year 1</th><th id="sim-yr-head-1">Year 2</th><th id="sim-yr-head-2">Year 3</th></tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>Token Price (USD)</td>
+                  <td><input type="number" id="sim-yr-price-0" step="any" class="sim-yr-input" placeholder="e.g. 0.05" /></td>
+                  <td><input type="number" id="sim-yr-price-1" step="any" class="sim-yr-input" placeholder="e.g. 0.08" /></td>
+                  <td><input type="number" id="sim-yr-price-2" step="any" class="sim-yr-input" placeholder="e.g. 0.12" /></td>
+                </tr>
+                <tr class="sim-highlight-row"><td>Annual Rev ($)</td><td id="sim-yr-rev-0">—</td><td id="sim-yr-rev-1">—</td><td id="sim-yr-rev-2">—</td></tr>
+                <tr><td>Monthly Rev ($)</td><td id="sim-yr-mo-0">—</td><td id="sim-yr-mo-1">—</td><td id="sim-yr-mo-2">—</td></tr>
+                <tr class="sim-net-row"><td>Net Rev ($)</td><td id="sim-yr-net-0">—</td><td id="sim-yr-net-1">—</td><td id="sim-yr-net-2">—</td></tr>
+                <tr><td>Monthly Net ($)</td><td id="sim-yr-mo-net-0">—</td><td id="sim-yr-mo-net-1">—</td><td id="sim-yr-mo-net-2">—</td></tr>
+                <tr><td>Annual Rev (₩)</td><td id="sim-yr-rev-krw-0">—</td><td id="sim-yr-rev-krw-1">—</td><td id="sim-yr-rev-krw-2">—</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Panel 6: BEP Calculator -->
+        <div class="panel" id="sim-bep-panel" style="display:none">
+          <div class="panel-title">Break-Even Analysis</div>
+          <div id="sim-bep-content" class="sim-bep-content"></div>
+        </div>
+
+        <!-- Panel 7: Ranking -->
         <div class="panel">
           <div class="panel-title">Ranking Among Current Partners</div>
           <div class="table-wrap">
             <table id="sim-rank-table">
-              <thead>
-                <tr>
-                  <th>#</th>
-                  <th>Partner</th>
-                  <th class="num">Annual Reward (USD)</th>
-                  <th class="num">AUM (USD)</th>
-                </tr>
-              </thead>
+              <thead><tr><th>#</th><th>Partner</th><th class="num">Annual Reward (USD)</th><th class="num">AUM (USD)</th></tr></thead>
               <tbody id="sim-rank-tbody"></tbody>
             </table>
           </div>
         </div>
+
       </div>
     </section>
 
@@ -718,16 +769,16 @@
     </section>
   </div>
 
-  <script src="js/data.js?v=20260312f"></script>
-  <script src="js/app.js?v=20260312f"></script>
-  <script src="js/router.js?v=20260312f"></script>
-  <script src="js/potential-partners.js?v=20260312f"></script>
-  <script src="js/simulation.js?v=20260312f"></script>
-  <script src="js/infra-costs.js?v=20260312f"></script>
-  <script src="js/net-revenue.js?v=20260312f"></script>
-  <script src="js/competitors.js?v=20260312f"></script>
-  <script src="js/tokenomics-calc.js?v=20260312f"></script>
-  <script src="js/tokenomics-score.js?v=20260312f"></script>
-  <script src="js/tokenomics.js?v=20260312f"></script>
+  <script src="js/data.js?v=20260312g"></script>
+  <script src="js/app.js?v=20260312g"></script>
+  <script src="js/router.js?v=20260312g"></script>
+  <script src="js/potential-partners.js?v=20260312g"></script>
+  <script src="js/simulation.js?v=20260312g"></script>
+  <script src="js/infra-costs.js?v=20260312g"></script>
+  <script src="js/net-revenue.js?v=20260312g"></script>
+  <script src="js/competitors.js?v=20260312g"></script>
+  <script src="js/tokenomics-calc.js?v=20260312g"></script>
+  <script src="js/tokenomics-score.js?v=20260312g"></script>
+  <script src="js/tokenomics.js?v=20260312g"></script>
 </body>
 </html>
