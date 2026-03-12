@@ -664,7 +664,9 @@ td .action-btns button { padding: 4px 10px; font-size: 0.66rem; }
 .tk-candidate img { border-radius: 50%; }
 .tk-cand-name { font-size: 0.78rem; font-weight: 600; color: var(--text); }
 .tk-cand-sym { font-size: 0.7rem; color: var(--text-dim); text-transform: uppercase; }
-.tk-cand-rank { font-size: 0.66rem; color: var(--text-muted); margin-left: auto; }
+.tk-cand-rank { font-size: 0.66rem; color: var(--text-muted); }
+.tk-cand-tvl { font-size: 0.66rem; color: #34d399; margin-left: auto; }
+.tk-cand-src { font-size: 0.55rem; margin-left: 6px; flex-shrink: 0; }
 
 .tk-header-card { padding: 14px 18px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; }
 .tk-header-left { display: flex; align-items: center; gap: 12px; }
@@ -696,6 +698,7 @@ td .action-btns button { padding: 4px 10px; font-size: 0.66rem; }
 .tk-src-high { color: #34d399; background: rgba(52,211,153,0.1); }
 .tk-src-low { color: #fbbf24; background: rgba(251,191,36,0.1); }
 .tk-src-none { color: var(--text-muted); background: rgba(85,85,85,0.15); }
+.tk-src-multi { color: #34d399; background: rgba(52,211,153,0.12); margin-left: 2px; cursor: help; }
 
 .tk-formula { font-size: 0.66rem; color: var(--text-dim); font-family: 'Courier New', monospace; white-space: nowrap; }
 .tk-interp { font-size: 0.7rem; color: var(--text-dim); white-space: normal; max-width: 280px; }

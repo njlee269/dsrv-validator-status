@@ -54,8 +54,12 @@
 
   function srcBadge(srcRef) {
     if (!srcRef || srcRef.value == null) return '<span class="tk-src tk-src-none">no data</span>';
-    var c = srcRef.confidence === "high" ? "high" : "low";
-    return '<span class="tk-src tk-src-' + c + '">' + esc(srcRef.source) + '</span>';
+    var c = srcRef.confidence === "high" ? "high" : (srcRef.confidence === "manual" ? "high" : "low");
+    var badge = '<span class="tk-src tk-src-' + c + '">' + esc(srcRef.source) + '</span>';
+    if (srcRef.allSources && srcRef.allSources.length > 1) {
+      badge += '<span class="tk-src tk-src-multi" title="Verified across ' + srcRef.allSources.length + ' sources"> +' + (srcRef.allSources.length - 1) + '</span>';
+    }
+    return badge;
   }
 
   function formatMetricValue(m) {
@@ -110,7 +114,10 @@
       if (c.thumb) html += '<img src="' + esc(c.thumb) + '" width="20" height="20" />';
       html += '<span class="tk-cand-name">' + esc(c.name) + '</span>';
       html += '<span class="tk-cand-sym">' + esc(c.symbol) + '</span>';
+      if (c.tvl) html += '<span class="tk-cand-tvl">TVL: ' + fmtNum(c.tvl) + '</span>';
       if (c.marketCapRank) html += '<span class="tk-cand-rank">#' + c.marketCapRank + '</span>';
+      var srcLabel = c.source === "defillama" ? "DL" : "CG";
+      html += '<span class="tk-src tk-src-high tk-cand-src">' + srcLabel + '</span>';
       html += '</div>';
     }
     html += '</div>';
@@ -320,6 +327,16 @@
     renderSourceAudit();
   }
 
+  function renderSourceBadges() {
+    if (!currentData || !currentData.sources) return '';
+    var s = currentData.sources;
+    var html = '';
+    if (s.coingecko) html += '<span class="tk-src tk-src-high">CoinGecko</span> ';
+    if (s.defillama) html += '<span class="tk-src tk-src-high">DefiLlama</span> ';
+    if (s.coinmarketcap) html += '<span class="tk-src tk-src-high">CMC</span> ';
+    return html;
+  }
+
   /* Panel 2: Header */
   function renderHeader() {
     var d = currentData.identity;
@@ -339,6 +356,7 @@
       '</div>' +
       '<div class="tk-header-right">' +
         (d.homepage ? '<a href="' + esc(d.homepage) + '" target="_blank" class="btn-secondary btn-sm">Website</a> ' : '') +
+        renderSourceBadges() +
         '<span class="tk-src tk-src-' + (currentScore.confidence >= 60 ? 'high' : 'low') + '">Confidence: ' + currentScore.confidence + '%</span>' +
       '</div>';
   }
