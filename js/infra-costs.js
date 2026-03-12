@@ -354,6 +354,10 @@
     status.className = "scrape-status scrape-pending";
     try {
       const r = await fetch("/api/infra/scrape?url=" + encodeURIComponent(url));
+      const ct = r.headers.get("content-type") || "";
+      if (!ct.includes("json")) {
+        throw new Error("Server not running or needs restart (got HTML instead of JSON)");
+      }
       const data = await r.json();
       if (data.error) throw new Error(data.error);
 
