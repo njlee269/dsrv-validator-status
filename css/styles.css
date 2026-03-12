@@ -749,6 +749,24 @@ td .action-btns button { padding: 4px 10px; font-size: 0.66rem; }
 .tk-dim-fill { height: 100%; border-radius: 4px; transition: width 0.5s; }
 .tk-dim-val { font-size: 0.72rem; font-weight: 700; color: var(--text); min-width: 30px; text-align: right; }
 
+.tk-projects-filter-row { padding: 10px 18px 0; }
+.tk-projects-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); gap: 10px; padding: 14px 18px; }
+.tk-proj-card {
+  background: var(--bg-card); border: 1px solid var(--border); border-radius: 8px;
+  padding: 14px; cursor: pointer; transition: border-color 0.15s;
+  display: flex; flex-direction: column; gap: 4px;
+}
+.tk-proj-card:hover { border-color: var(--accent); }
+.tk-proj-identity { display: flex; align-items: center; gap: 8px; }
+.tk-proj-name { font-size: 0.8rem; font-weight: 700; color: var(--text); }
+.tk-proj-sym { font-size: 0.65rem; color: var(--text-dim); text-transform: uppercase; }
+.tk-proj-score-row { display: flex; align-items: center; gap: 8px; margin-top: 6px; }
+.tk-proj-score { font-size: 1.1rem; font-weight: 900; line-height: 1; }
+.tk-proj-score-of { font-size: 0.58rem; font-weight: 400; color: var(--text-muted); }
+.tk-proj-verdict { font-size: 0.66rem; font-weight: 700; }
+.tk-proj-date { font-size: 0.6rem; color: var(--text-muted); margin-top: 4px; }
+.tk-proj-actions { display: flex; gap: 6px; margin-top: 8px; }
+
 .tk-summary { padding: 18px; }
 .tk-summary-text { font-size: 0.78rem; color: var(--text-dim); line-height: 1.7; }
 

@@ -581,9 +581,6 @@
             <div class="tk-search-row">
               <input type="text" id="tk-search-input" class="search-input" placeholder="Search protocol name or ticker..." style="max-width:320px" />
               <button class="btn-primary" id="tk-search-btn">Search</button>
-              <select id="tk-load-profile" class="tk-select">
-                <option value="">-- Load Saved --</option>
-              </select>
               <button class="btn-secondary" id="tk-toggle-manual">Show Manual Entry</button>
               <button class="btn-primary" id="tk-save-btn">Save Profile</button>
             </div>
@@ -651,6 +648,17 @@
               <button type="button" class="btn-primary" id="tk-manual-analyze-btn">Analyze (Manual Data)</button>
               <button type="button" class="btn-secondary" id="tk-rerun-btn">Re-run with Overrides</button>
             </div>
+          </div>
+        </div>
+
+        <!-- Saved Projects Panel -->
+        <div class="panel" id="tk-projects-panel">
+          <div class="panel-title">Saved Projects</div>
+          <div class="tk-projects-filter-row">
+            <input type="text" id="tk-projects-filter" class="search-input" placeholder="Filter by name or ticker..." style="max-width:280px" />
+          </div>
+          <div id="tk-projects-list" class="tk-projects-grid">
+            <div class="empty-state">No saved profiles yet. Run an analysis and click Save Profile.</div>
           </div>
         </div>
 

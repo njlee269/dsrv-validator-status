@@ -667,20 +667,66 @@
     if (existing >= 0) profiles[existing] = entry;
     else profiles.push(entry);
     await saveProfiles();
-    populateLoadSelector();
+    renderProjectsPanel();
   }
 
-  function populateLoadSelector() {
-    var sel = document.getElementById("tk-load-profile");
-    if (!sel) return;
-    while (sel.options.length > 1) sel.remove(1);
-    for (var i = 0; i < profiles.length; i++) {
-      var p = profiles[i];
-      var opt = document.createElement("option");
-      opt.value = p.id;
-      opt.textContent = p.name + " (" + p.symbol + ") — " + p.score + "/100";
-      sel.appendChild(opt);
+  function renderProjectsPanel(filterText) {
+    var list = document.getElementById("tk-projects-list");
+    if (!list) return;
+
+    var query = (filterText || "").toLowerCase().trim();
+    var filtered = profiles.filter(function (p) {
+      if (!query) return true;
+      return (p.name || "").toLowerCase().includes(query) || (p.symbol || "").toLowerCase().includes(query);
+    });
+
+    if (filtered.length === 0) {
+      list.innerHTML = '<div class="empty-state">' + (query ? 'No projects match "' + esc(filterText) + '".' : 'No saved profiles yet. Run an analysis and click Save Profile.') + '</div>';
+      return;
     }
+
+    var html = '';
+    for (var i = 0; i < filtered.length; i++) {
+      var p = filtered[i];
+      var vColor = (p.score >= 60) ? "green" : (p.score >= 40 ? "yellow" : "red");
+      var scoreColor = (p.score >= 60) ? "#34d399" : (p.score >= 40 ? "#fbbf24" : "#f87171");
+      var img = p.data && p.data.identity && p.data.identity.imageThumb;
+      html += '<div class="tk-proj-card">';
+      html += '<div class="tk-proj-identity">';
+      if (img) html += '<img src="' + esc(img) + '" width="26" height="26" style="border-radius:50%;flex-shrink:0" />';
+      html += '<div><div class="tk-proj-name">' + esc(p.name) + '</div><div class="tk-proj-sym">' + esc(p.symbol) + '</div></div>';
+      html += '</div>';
+      html += '<div class="tk-proj-score-row">';
+      html += '<span class="tk-proj-score" style="color:' + scoreColor + '">' + p.score + '<span class="tk-proj-score-of">/100</span></span>';
+      html += '<span class="tk-proj-verdict tk-verdict-' + vColor + '">' + esc(p.verdict || "") + '</span>';
+      html += '</div>';
+      html += '<div class="tk-proj-date">' + esc(p.savedAt ? p.savedAt.slice(0, 10) : "") + '</div>';
+      html += '<div class="tk-proj-actions">';
+      html += '<button class="btn-secondary btn-sm tk-proj-load" data-id="' + esc(p.id) + '">Load</button>';
+      html += '<button class="btn-danger btn-sm tk-proj-delete" data-id="' + esc(p.id) + '">Delete</button>';
+      html += '</div>';
+      html += '</div>';
+    }
+    list.innerHTML = html;
+
+    list.querySelectorAll(".tk-proj-load").forEach(function (btn) {
+      btn.addEventListener("click", function () {
+        var id = this.getAttribute("data-id");
+        var profile = profiles.find(function (p) { return p.id === id; });
+        if (profile) runFromProfile(profile);
+      });
+    });
+
+    list.querySelectorAll(".tk-proj-delete").forEach(function (btn) {
+      btn.addEventListener("click", function () {
+        var id = this.getAttribute("data-id");
+        if (!confirm("Delete " + id + "?")) return;
+        profiles = profiles.filter(function (p) { return p.id !== id; });
+        saveProfiles();
+        var filterEl = document.getElementById("tk-projects-filter");
+        renderProjectsPanel(filterEl ? filterEl.value : "");
+      });
+    });
   }
 
   /* ── Event Setup ── */
@@ -709,12 +755,9 @@
       if (e.key === "Enter") { e.preventDefault(); searchBtn.click(); }
     });
 
-    var loadSel = document.getElementById("tk-load-profile");
-    if (loadSel) loadSel.addEventListener("change", function () {
-      var id = this.value;
-      if (!id) return;
-      var profile = profiles.find(function (p) { return p.id === id; });
-      if (profile) runFromProfile(profile);
+    var filterInput = document.getElementById("tk-projects-filter");
+    if (filterInput) filterInput.addEventListener("input", function () {
+      renderProjectsPanel(this.value);
     });
 
     var saveBtn = document.getElementById("tk-save-btn");
@@ -761,7 +804,7 @@
   async function init() {
     await loadProfiles();
     setup();
-    populateLoadSelector();
+    renderProjectsPanel();
   }
 
   if (document.readyState === "loading") {
