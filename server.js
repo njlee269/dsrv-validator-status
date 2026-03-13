@@ -223,6 +223,41 @@ function messariSlug(name, symbol) {
 }
 
 /* ═══════════════════════════════════════
+   CryptoRank API — tokenomics distributions + fundraising
+   Free tier: 400 credits/day, 10k/month, 100 req/min
+   ═══════════════════════════════════════ */
+
+const CR_KEY  = process.env.CRYPTORANK_API_KEY || "22ac6315241563ef314f7b14eac21941f3607ce0880d695e6c2a3999aa47";
+const CR_BASE = "https://api.cryptorank.io/v1";
+
+async function crCurrency(key) {
+  if (!CR_KEY || !key) return null;
+  try {
+    return await cachedFetch(
+      `cr:currency:${key}`,
+      `${CR_BASE}/currencies/${encodeURIComponent(key)}?api_key=${CR_KEY}`,
+      {}
+    );
+  } catch { return null; }
+}
+
+async function crFundraising(key) {
+  if (!CR_KEY || !key) return null;
+  try {
+    return await cachedFetch(
+      `cr:fundraising:${key}`,
+      `${CR_BASE}/currencies/${encodeURIComponent(key)}/fundraising?api_key=${CR_KEY}`,
+      {}
+    );
+  } catch { return null; }
+}
+
+// CryptoRank uses lowercase symbol as key (e.g. "eth", "sui", "btc")
+function crKey(symbol) {
+  return (symbol || "").toLowerCase();
+}
+
+/* ═══════════════════════════════════════
    CoinMarketCap API (optional, needs CMC_API_KEY env)
    ═══════════════════════════════════════ */
 
@@ -364,11 +399,14 @@ app.get("/api/tokenomics/coin/:id", async (req, res) => {
     const symbol = (cgRaw.symbol || "").toUpperCase();
 
     const mSlug = messariSlug(name, symbol);
-    const [dlMatch, cmcData, msProfile, msMetrics] = await Promise.all([
+    const cKey  = crKey(symbol);
+    const [dlMatch, cmcData, msProfile, msMetrics, crData, crFunds] = await Promise.all([
       findDlSlug(name, symbol, id),
       cmcQuote(symbol),
       messariProfile(mSlug),
       messariMetrics(mSlug),
+      crCurrency(cKey),
+      crFundraising(cKey),
     ]);
 
     let dlData = null, dlFeesData = null, dlRevData = null;
@@ -442,25 +480,62 @@ app.get("/api/tokenomics/coin/:id", async (req, res) => {
       },
       allocations: (function () {
         const msUrl = `https://messari.io/asset/${mSlug}`;
-        const dist  = msProfile?.data?.profile?.economics?.token_distribution?.initial_distribution ?? null;
-        const economy = msProfile?.data?.profile?.economics ?? null;
+        const crUrl = `https://cryptorank.io/price/${cKey}`;
 
-        // Messari field names vary — try multiple paths
-        const teamPct   = dist?.team_allocation_percentage  ?? dist?.team_percentage       ?? null;
-        const invPct    = dist?.investors_percentage         ?? dist?.investor_percentage    ?? null;
-        const foundPct  = dist?.foundation_allocation_percentage ?? dist?.foundation_percentage ?? null;
-        const commPct   = dist?.community_percentage         ?? dist?.ecosystem_fund_percentage ?? null;
-        const airdropPct= dist?.airdrop_percentage           ?? null;
-        const publicPct = dist?.public_sale_percentage       ?? null;
+        // Messari distribution
+        const dist    = msProfile?.data?.profile?.economics?.token_distribution?.initial_distribution ?? null;
+        const economy = msProfile?.data?.profile?.economics ?? null;
+        const msTeam  = dist?.team_allocation_percentage  ?? dist?.team_percentage       ?? null;
+        const msInv   = dist?.investors_percentage         ?? dist?.investor_percentage    ?? null;
+        const msFnd   = dist?.foundation_allocation_percentage ?? dist?.foundation_percentage ?? null;
+        const msComm  = dist?.community_percentage         ?? dist?.ecosystem_fund_percentage ?? null;
+        const msAir   = dist?.airdrop_percentage           ?? null;
+        const msPub   = dist?.public_sale_percentage       ?? null;
+
+        // CryptoRank distribution — keyed array of { name, percentage }
+        const crDist  = crData?.data?.tokenomics?.distributions ?? crData?.data?.distributions ?? [];
+        function crPct(labels) {
+          const row = crDist.find(d => labels.some(l => (d.name || "").toLowerCase().includes(l)));
+          return row ? (row.percentage ?? row.percent ?? null) : null;
+        }
+        const crTeam = crPct(["team", "founders", "founder"]);
+        const crInv  = crPct(["investor", "private", "seed", "strategic"]);
+        const crFnd  = crPct(["foundation", "ecosystem fund", "treasury", "reserve"]);
+        const crComm = crPct(["community", "public", "airdrop", "staking reward", "rewards"]);
+        const crAir  = crPct(["airdrop"]);
+        const crPub  = crPct(["public sale", "ido", "ico", "ieo"]);
+
+        // Pick best: prefer whichever source has a non-null value; if both, pick Messari
+        const best = (ms, cr, field) => {
+          if (ms != null) return srcRef(ms, "messari",     msUrl, field);
+          if (cr != null) return srcRef(cr, "cryptorank",  crUrl, field);
+          return srcRef(null, "none", null, field);
+        };
+
+        // CryptoRank fundraising rounds
+        const rounds = crFunds?.data ?? [];
+        const totalRaised = rounds.reduce((s, r) => s + (r.amount ?? 0), 0) || null;
+        const investors   = [...new Set(rounds.flatMap(r => (r.investors ?? []).map(i => i.name ?? i)))].slice(0, 20);
 
         return {
-          teamPct:       srcRef(teamPct,    teamPct    != null ? "messari" : "none", teamPct    != null ? msUrl : null, "team_allocation"),
-          investorPct:   srcRef(invPct,     invPct     != null ? "messari" : "none", invPct     != null ? msUrl : null, "investor_allocation"),
-          foundationPct: srcRef(foundPct,   foundPct   != null ? "messari" : "none", foundPct   != null ? msUrl : null, "foundation_allocation"),
-          communityPct:  srcRef(commPct,    commPct    != null ? "messari" : "none", commPct    != null ? msUrl : null, "community_allocation"),
-          airdropPct:    srcRef(airdropPct, airdropPct != null ? "messari" : "none", airdropPct != null ? msUrl : null, "airdrop_allocation"),
-          publicSalePct: srcRef(publicPct,  publicPct  != null ? "messari" : "none", publicPct  != null ? msUrl : null, "public_sale"),
+          teamPct:       best(msTeam, crTeam, "team_allocation"),
+          investorPct:   best(msInv,  crInv,  "investor_allocation"),
+          foundationPct: best(msFnd,  crFnd,  "foundation_allocation"),
+          communityPct:  best(msComm, crComm, "community_allocation"),
+          airdropPct:    best(msAir,  crAir,  "airdrop_allocation"),
+          publicSalePct: best(msPub,  crPub,  "public_sale"),
           description:   dist?.description ?? economy?.launch_details?.description ?? null,
+          fundraising: {
+            totalRaisedUsd: totalRaised,
+            rounds: rounds.slice(0, 10).map(r => ({
+              name:      r.name ?? r.type ?? null,
+              date:      r.date ?? null,
+              amountUsd: r.amount ?? null,
+              price:     r.price ?? null,
+              investors: (r.investors ?? []).map(i => i.name ?? i).slice(0, 8),
+            })),
+            notableInvestors: investors,
+          },
         };
       })(),
       unlocks: (function () {
@@ -511,6 +586,7 @@ app.get("/api/tokenomics/coin/:id", async (req, res) => {
         defillama:    !!dlMatch,
         coinmarketcap: !!cmcQuoteData,
         messari:      !!msProfile?.data,
+        cryptorank:   !!crData?.data,
       },
       supplyType: md.max_supply != null ? "capped" : (md.total_supply != null ? "dynamic" : "unknown"),
     };

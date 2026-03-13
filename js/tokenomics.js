@@ -429,7 +429,43 @@
     if (el) el.style.display = on ? "" : "none";
   }
 
-  /* ── Render All 8 Panels ── */
+  /* Panel: Fundraising & Investor Rounds */
+  function renderFundraising() {
+    var el = document.getElementById("tk-fundraising-panel");
+    if (!el) return;
+    var funds = currentData.allocations && currentData.allocations.fundraising;
+    if (!funds || (!funds.totalRaisedUsd && !(funds.rounds && funds.rounds.length))) {
+      el.style.display = "none"; return;
+    }
+    el.style.display = "";
+    var html = '<div class="tk-summary-text">';
+    if (funds.totalRaisedUsd) {
+      html += '<strong>Total Raised:</strong> ' + fmtNum(funds.totalRaisedUsd) + ' &nbsp;';
+    }
+    if (funds.notableInvestors && funds.notableInvestors.length) {
+      html += '<strong>Investors:</strong> ' + esc(funds.notableInvestors.slice(0, 10).join(", "));
+    }
+    html += '</div>';
+    if (funds.rounds && funds.rounds.length) {
+      html += '<div class="table-wrap" style="margin-top:10px"><table><thead><tr>' +
+        '<th>Round</th><th>Date</th><th class="num">Raised</th><th>Investors</th>' +
+        '</tr></thead><tbody>';
+      funds.rounds.forEach(function (r) {
+        html += '<tr>' +
+          '<td>' + esc(r.name || '—') + '</td>' +
+          '<td style="color:var(--text-dim)">' + esc(r.date ? r.date.slice(0,10) : '—') + '</td>' +
+          '<td class="num">' + (r.amountUsd ? fmtNum(r.amountUsd) : '—') + '</td>' +
+          '<td style="font-size:0.72rem;color:var(--text-dim)">' + esc((r.investors || []).join(', ') || '—') + '</td>' +
+          '</tr>';
+      });
+      html += '</tbody></table></div>';
+    }
+    var title = document.getElementById("tk-fundraising-title");
+    if (title && funds.totalRaisedUsd) title.textContent = "Fundraising — " + fmtNum(funds.totalRaisedUsd) + " raised";
+    document.getElementById("tk-fundraising-body").innerHTML = html;
+  }
+
+  /* ── Render All Panels ── */
 
   function renderAll() {
     if (!currentData) return;
@@ -439,6 +475,7 @@
     renderMetricsTable();
     renderRiskIndicators();
     renderScorePanel();
+    renderFundraising();
     renderSummary();
     renderSourceAudit();
   }
@@ -447,9 +484,11 @@
     if (!currentData || !currentData.sources) return '';
     var s = currentData.sources;
     var html = '';
-    if (s.coingecko) html += '<span class="tk-src tk-src-high">CoinGecko</span> ';
-    if (s.defillama) html += '<span class="tk-src tk-src-high">DefiLlama</span> ';
+    if (s.coingecko)    html += '<span class="tk-src tk-src-high">CoinGecko</span> ';
+    if (s.defillama)    html += '<span class="tk-src tk-src-high">DefiLlama</span> ';
     if (s.coinmarketcap) html += '<span class="tk-src tk-src-high">CMC</span> ';
+    if (s.messari)      html += '<span class="tk-src tk-src-high">Messari</span> ';
+    if (s.cryptorank)   html += '<span class="tk-src tk-src-high">CryptoRank</span> ';
     return html;
   }
 
@@ -629,8 +668,10 @@
     addSrc("Foundation %", a.foundationPct);
     addSrc("Community %", a.communityPct);
     addSrc("Airdrop %", a.airdropPct);
+    addSrc("Public Sale %", a.publicSalePct);
 
     addSrc("12M Unlock Est.", currentData.unlocks.tokens12mEstimate);
+    addSrc("Annual Inflation %", currentData.unlocks.annualInflationPct);
     addSrc("TVL", currentData.fundamentals.tvl);
 
     var html = "";
