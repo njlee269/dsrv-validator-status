@@ -1,1 +1,72 @@
-[]
+[
+  {
+    "id": "blockdaemon",
+    "name": "Blockdaemon",
+    "website": "https://www.blockdaemon.com/",
+    "chains": [],
+    "notes": null
+  },
+  {
+    "id": "figment",
+    "name": "Figment",
+    "website": "https://figment.io/",
+    "chains": [],
+    "notes": null
+  },
+  {
+    "id": "kiln",
+    "name": "Kiln",
+    "website": "https://www.kiln.fi/",
+    "chains": [],
+    "notes": null
+  },
+  {
+    "id": "p2p",
+    "name": "P2P.org",
+    "website": "https://www.p2p.org/",
+    "chains": [],
+    "notes": null
+  },
+  {
+    "id": "chorus-one",
+    "name": "Chorus One",
+    "website": "https://chorus.one/",
+    "chains": [],
+    "notes": null
+  },
+  {
+    "id": "everstake",
+    "name": "Everstake",
+    "website": "https://everstake.one/",
+    "chains": [],
+    "notes": null
+  },
+  {
+    "id": "infstones",
+    "name": "InfStones",
+    "website": "https://infstones.com/",
+    "chains": [],
+    "notes": null
+  },
+  {
+    "id": "dsrv",
+    "name": "DSRV",
+    "website": "https://dsrv.com/",
+    "chains": [],
+    "notes": null
+  },
+  {
+    "id": "stakin",
+    "name": "Stakin",
+    "website": "https://stakin.com/",
+    "chains": [],
+    "notes": null
+  },
+  {
+    "id": "allnodes",
+    "name": "Allnodes",
+    "website": "https://www.allnodes.com/",
+    "chains": [],
+    "notes": null
+  }
+]
