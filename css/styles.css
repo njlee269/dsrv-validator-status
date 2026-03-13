@@ -853,6 +853,34 @@ td .action-btns button { padding: 4px 10px; font-size: 0.66rem; }
 }
 
 /* ═══════════════════════════════════════
+   SIMULATION COIN SEARCH DROPDOWN
+   ═══════════════════════════════════════ */
+
+.sim-search-wrap { position: relative; }
+
+.sim-search-dropdown {
+  position: absolute;
+  top: calc(100% + 2px); left: 0; right: 0; z-index: 300;
+  background: var(--bg-card);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-sm);
+  max-height: 260px; overflow-y: auto;
+  box-shadow: var(--shadow-md);
+}
+.sim-dd-item {
+  display: flex; align-items: center; gap: 8px;
+  padding: 8px 12px; cursor: pointer;
+  border-bottom: 1px solid var(--border);
+  transition: background 0.1s;
+}
+.sim-dd-item:last-child { border-bottom: none; }
+.sim-dd-item:hover { background: var(--bg-card-hover); }
+.sim-dd-item img { width: 20px; height: 20px; border-radius: 50%; flex-shrink: 0; }
+.sim-dd-noimg { width: 20px; height: 20px; flex-shrink: 0; }
+.sim-dd-name { flex: 1; font-size: 0.8rem; font-weight: 600; color: var(--text); }
+.sim-dd-sym  { font-size: 0.7rem; font-weight: 600; color: var(--text-muted); min-width: 40px; text-align: right; }
+
+/* ═══════════════════════════════════════
    INFRA COSTS
    ═══════════════════════════════════════ */
 

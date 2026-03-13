@@ -273,21 +273,97 @@
     tbody.innerHTML = html;
   }
 
+  // ── Coin search dropdown ───────────────────────────────────────────────────
+  var searchTimer = null;
+
+  async function searchCoins(q) {
+    // Try server proxy first
+    try {
+      var r = await fetch("/api/tokenomics/search?q=" + encodeURIComponent(q));
+      if (r.ok) {
+        var data = await r.json();
+        if (Array.isArray(data) && data.length) return data;
+      }
+    } catch (e) { /* fall through */ }
+    // Browser direct fallback
+    try {
+      var r2 = await fetch("https://api.coingecko.com/api/v3/search?query=" + encodeURIComponent(q));
+      var d2 = await r2.json();
+      return (d2.coins || []).slice(0, 10).map(function (c) {
+        return { id: c.id, name: c.name, symbol: (c.symbol || "").toUpperCase(), thumb: c.thumb };
+      });
+    } catch (e) { return []; }
+  }
+
+  function showDropdown(results) {
+    var dd = document.getElementById("sim-search-dropdown");
+    if (!dd) return;
+    if (!results || !results.length) { dd.style.display = "none"; return; }
+    var html = "";
+    results.forEach(function (r) {
+      html += '<div class="sim-dd-item" data-id="' + escHtml(r.id) + '" data-name="' + escHtml(r.name) + '" data-symbol="' + escHtml(r.symbol) + '">' +
+        (r.thumb ? '<img src="' + escHtml(r.thumb) + '" />' : '<span class="sim-dd-noimg"></span>') +
+        '<span class="sim-dd-name">' + escHtml(r.name) + '</span>' +
+        '<span class="sim-dd-sym">' + escHtml(r.symbol) + '</span>' +
+        '</div>';
+    });
+    dd.innerHTML = html;
+    dd.style.display = "";
+    dd.querySelectorAll(".sim-dd-item").forEach(function (item) {
+      item.addEventListener("mousedown", function (e) {
+        e.preventDefault();
+        selectCoin(item.dataset.id, item.dataset.name, item.dataset.symbol);
+      });
+    });
+  }
+
+  function closeDropdown() {
+    var dd = document.getElementById("sim-search-dropdown");
+    if (dd) dd.style.display = "none";
+  }
+
+  async function selectCoin(id, name, symbol) {
+    closeDropdown();
+    var nameEl = document.getElementById("sim-name");
+    var tokenEl = document.getElementById("sim-token");
+    var cgEl = document.getElementById("sim-coingecko");
+    var priceEl = document.getElementById("sim-price");
+    if (nameEl)  nameEl.value  = name;
+    if (tokenEl) tokenEl.value = symbol;
+    if (cgEl)    cgEl.value    = id;
+    if (priceEl) priceEl.placeholder = "Fetching…";
+    var data = await fetchTokenPrice(id);
+    if (data.usd != null) {
+      if (priceEl) priceEl.value = data.usd;
+      var krwEl = document.getElementById("sim-krw-rate");
+      if (krwEl && !krwEl.value && data.krw && data.usd) krwEl.value = Math.round(data.krw / data.usd);
+    }
+    if (priceEl) priceEl.placeholder = "Auto-filled on select";
+  }
+
+  function setupSearch() {
+    var nameEl = document.getElementById("sim-name");
+    if (!nameEl) return;
+    nameEl.addEventListener("input", function () {
+      var q = this.value.trim();
+      clearTimeout(searchTimer);
+      if (q.length < 2) { closeDropdown(); return; }
+      searchTimer = setTimeout(async function () {
+        var results = await searchCoins(q);
+        showDropdown(results);
+      }, 350);
+    });
+    nameEl.addEventListener("blur", function () {
+      setTimeout(closeDropdown, 150);
+    });
+    document.addEventListener("click", function (e) {
+      if (!e.target.closest(".sim-search-wrap")) closeDropdown();
+    });
+  }
+
   function setup() {
     document.getElementById("btn-sim-calc") && document.getElementById("btn-sim-calc").addEventListener("click", calculate);
-
-    document.getElementById("btn-fetch-price") && document.getElementById("btn-fetch-price").addEventListener("click", async function () {
-      var cgId = document.getElementById("sim-coingecko") ? document.getElementById("sim-coingecko").value.trim() : "";
-      if (!cgId) { alert("Enter a CoinGecko ID first."); return; }
-      this.textContent = "..."; this.disabled = true;
-      var data = await fetchTokenPrice(cgId);
-      if (data.usd != null) {
-        document.getElementById("sim-price").value = data.usd;
-        var krwEl = document.getElementById("sim-krw-rate");
-        if (krwEl && !krwEl.value && data.krw && data.usd) krwEl.value = Math.round(data.krw / data.usd);
-      } else { alert("Price not found. Check the CoinGecko ID."); }
-      this.textContent = "Fetch Price"; this.disabled = false;
-    });
+    setupSearch();
 
     document.getElementById("btn-fetch-krw") && document.getElementById("btn-fetch-krw").addEventListener("click", async function () {
       this.textContent = "..."; this.disabled = true;
@@ -313,6 +389,7 @@
     });
 
     document.getElementById("btn-sim-reset") && document.getElementById("btn-sim-reset").addEventListener("click", function () {
+      closeDropdown();
       var clearIds = ["sim-name","sim-token","sim-coingecko","sim-price","sim-krw-rate","sim-self-stake","sim-delegation","sim-op-cost","sim-op-payment","sim-selfstake-note"];
       for (var i = 0; i < clearIds.length; i++) { var el = document.getElementById(clearIds[i]); if (el) el.value = ""; }
       document.getElementById("sim-apr").value = "10";

@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>DSRV Validator Status</title>
-  <link rel="stylesheet" href="css/styles.css?v=20260312i" />
+  <link rel="stylesheet" href="css/styles.css?v=20260312j" />
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 </head>
 <body class="has-sidebar">
@@ -275,16 +275,14 @@
           <div class="sim-input-area">
             <div class="form-subtitle">Chain Info</div>
             <div class="form-grid">
-              <div class="form-group"><label>Protocol / Chain</label><input type="text" id="sim-name" placeholder="e.g. XDC" /></div>
-              <div class="form-group"><label>Token Symbol</label><input type="text" id="sim-token" placeholder="e.g. XDC" /></div>
-              <div class="form-group">
-                <label>CoinGecko ID</label>
-                <div style="display:flex;gap:6px">
-                  <input type="text" id="sim-coingecko" placeholder="e.g. xdce-crowd-sale" style="flex:1" />
-                  <button class="btn-secondary btn-sm" id="btn-fetch-price">Fetch Price</button>
-                </div>
+              <div class="form-group sim-search-wrap">
+                <label>Protocol / Chain</label>
+                <input type="text" id="sim-name" placeholder="Type to search coin…" autocomplete="off" />
+                <div id="sim-search-dropdown" class="sim-search-dropdown" style="display:none"></div>
               </div>
-              <div class="form-group"><label>Token Price (USD)</label><input type="number" id="sim-price" step="any" placeholder="Auto-filled" /></div>
+              <div class="form-group"><label>Token Symbol</label><input type="text" id="sim-token" placeholder="Auto-filled" /></div>
+              <input type="hidden" id="sim-coingecko" />
+              <div class="form-group"><label>Token Price (USD)</label><input type="number" id="sim-price" step="any" placeholder="Auto-filled on select" /></div>
               <div class="form-group">
                 <label>USD / KRW Rate</label>
                 <div style="display:flex;gap:6px">
@@ -853,16 +851,16 @@
     </section>
   </div>
 
-  <script src="js/data.js?v=20260312i"></script>
-  <script src="js/app.js?v=20260312i"></script>
-  <script src="js/router.js?v=20260312i"></script>
-  <script src="js/potential-partners.js?v=20260312i"></script>
-  <script src="js/simulation.js?v=20260312i"></script>
-  <script src="js/infra-costs.js?v=20260312i"></script>
-  <script src="js/net-revenue.js?v=20260312i"></script>
-  <script src="js/competitors.js?v=20260312i"></script>
-  <script src="js/tokenomics-calc.js?v=20260312i"></script>
-  <script src="js/tokenomics-score.js?v=20260312i"></script>
-  <script src="js/tokenomics.js?v=20260312i"></script>
+  <script src="js/data.js?v=20260312j"></script>
+  <script src="js/app.js?v=20260312j"></script>
+  <script src="js/router.js?v=20260312j"></script>
+  <script src="js/potential-partners.js?v=20260312j"></script>
+  <script src="js/simulation.js?v=20260312j"></script>
+  <script src="js/infra-costs.js?v=20260312j"></script>
+  <script src="js/net-revenue.js?v=20260312j"></script>
+  <script src="js/competitors.js?v=20260312j"></script>
+  <script src="js/tokenomics-calc.js?v=20260312j"></script>
+  <script src="js/tokenomics-score.js?v=20260312j"></script>
+  <script src="js/tokenomics.js?v=20260312j"></script>
 </body>
 </html>
