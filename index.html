@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>DSRV Validator Status</title>
-  <link rel="stylesheet" href="css/styles.css?v=20260313a" />
+  <link rel="stylesheet" href="css/styles.css?v=20260313b" />
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 </head>
 <body class="has-sidebar">
@@ -308,40 +308,46 @@
           </div>
         </div>
 
-        <!-- Panel 2: Main Comparison Table -->
+        <!-- Panel 2: Revenue Analysis (combined self-stake + delegation) -->
         <div class="panel" id="sim-results-panel" style="display:none">
-          <div class="panel-title">Revenue Analysis</div>
+          <div class="panel-title">
+            Revenue Analysis
+            <button class="btn-primary btn-sm" id="btn-save-sim">Save Simulation</button>
+          </div>
           <div style="overflow-x:auto">
             <table class="sim-calc-table">
-              <thead><tr><th></th><th>SELF STAKE REQ</th><th>IF DELEGATED</th></tr></thead>
+              <thead><tr><th>METRIC</th><th>VALUE</th></tr></thead>
               <tbody>
-                <tr><td>DELEGATION</td><td id="sc-self-deleg">—</td><td id="sc-del-deleg">—</td></tr>
-                <tr><td>APR</td><td id="sc-self-apr">—</td><td id="sc-del-apr">—</td></tr>
-                <tr><td>COMMISSION</td><td id="sc-self-comm">—</td><td id="sc-del-comm">—</td></tr>
-                <tr><td>TOKEN PRICE</td><td id="sc-self-price">—</td><td id="sc-del-price">—</td></tr>
-                <tr class="sim-highlight-row"><td>ANNUAL REV ($)</td><td id="sc-self-rev-usd">—</td><td id="sc-del-rev-usd">—</td></tr>
-                <tr class="sim-highlight-row"><td>ANNUAL REV (₩)</td><td id="sc-self-rev-krw">—</td><td id="sc-del-rev-krw">—</td></tr>
-                <tr class="sim-net-row"><td>NET REV</td><td id="sc-self-net">—</td><td id="sc-del-net">—</td></tr>
-                <tr><td>AUM</td><td id="sc-self-aum">—</td><td id="sc-del-aum">—</td></tr>
-                <tr><td>MONTHLY REV ($)</td><td id="sc-self-mo-usd">—</td><td id="sc-del-mo-usd">—</td></tr>
-                <tr><td>MONTHLY NET</td><td id="sc-self-mo-net">—</td><td id="sc-del-mo-net">—</td></tr>
-                <tr><td>STAKE IN ($)</td><td id="sc-self-stake-usd">—</td><td id="sc-del-stake-usd">—</td></tr>
-                <tr><td>STAKE IN (₩)</td><td id="sc-self-stake-krw">—</td><td id="sc-del-stake-krw">—</td></tr>
+                <tr><td>Self-Stake (tokens)</td><td id="sc-self-deleg">—</td></tr>
+                <tr><td>Partner Delegation (tokens)</td><td id="sc-ext-deleg">—</td></tr>
+                <tr class="sim-total-row"><td>TOTAL DELEGATION</td><td id="sc-total-deleg">—</td></tr>
+                <tr><td>Token Price</td><td id="sc-price">—</td></tr>
+                <tr><td>APR</td><td id="sc-apr">—</td></tr>
+                <tr><td>Commission</td><td id="sc-comm">—</td></tr>
+                <tr class="sim-highlight-row"><td>ANNUAL REV ($)</td><td id="sc-rev-usd">—</td></tr>
+                <tr class="sim-highlight-row"><td>ANNUAL REV (₩)</td><td id="sc-rev-krw">—</td></tr>
+                <tr class="sim-highlight-row sim-net-row"><td>NET ANNUAL REV ($)</td><td id="sc-net-usd">—</td></tr>
+                <tr class="sim-highlight-row sim-net-row"><td>NET ANNUAL REV (₩)</td><td id="sc-net-krw">—</td></tr>
+                <tr><td>Monthly Rev ($)</td><td id="sc-mo-usd">—</td></tr>
+                <tr><td>Monthly Net ($)</td><td id="sc-mo-net">—</td></tr>
+                <tr><td>Total AUM ($)</td><td id="sc-aum">—</td></tr>
+                <tr><td>Stake-In Value ($)</td><td id="sc-stake-usd">—</td></tr>
+                <tr><td>Stake-In Value (₩)</td><td id="sc-stake-krw">—</td></tr>
               </tbody>
             </table>
           </div>
         </div>
 
-        <!-- Panel 3: Additional -->
+        <!-- Panel 3: Delegation Upside (extra revenue from partner delegation vs self-only) -->
         <div class="panel" id="sim-additional-panel" style="display:none">
-          <div class="panel-title">Additional Upside (Delegated vs Self-Stake)</div>
+          <div class="panel-title">Delegation Upside (vs Self-Stake Only)</div>
           <div style="overflow-x:auto">
             <table class="sim-calc-table">
               <tbody>
-                <tr><td>ADDITIONAL TOKEN</td><td id="sc-add-token">—</td></tr>
-                <tr><td>ADDITIONAL REV ($)</td><td id="sc-add-rev-usd">—</td></tr>
-                <tr><td>ADDITIONAL REV (₩)</td><td id="sc-add-rev-krw">—</td></tr>
-                <tr><td>ADDITIONAL AUM</td><td id="sc-add-aum">—</td></tr>
+                <tr><td>Extra Tokens from Delegation</td><td id="sc-add-token">—</td></tr>
+                <tr><td>Extra Annual Rev ($)</td><td id="sc-add-rev-usd">—</td></tr>
+                <tr><td>Extra Annual Rev (₩)</td><td id="sc-add-rev-krw">—</td></tr>
+                <tr><td>Extra AUM ($)</td><td id="sc-add-aum">—</td></tr>
               </tbody>
             </table>
           </div>
@@ -352,14 +358,12 @@
           <div class="panel-title">Validator Operation Cost</div>
           <div style="overflow-x:auto">
             <table class="sim-calc-table">
-              <thead><tr><th>VALIDATOR</th><th>ANNUAL</th><th>MONTHLY</th></tr></thead>
+              <thead><tr><th>METRIC</th><th>ANNUAL</th><th>MONTHLY</th></tr></thead>
               <tbody>
                 <tr class="sim-cost-row"><td>OPERATION COST</td><td id="sc-op-annual">—</td><td id="sc-op-monthly">—</td></tr>
                 <tr class="sim-payment-row"><td>OPERATION PAYMENT</td><td id="sc-pay-annual">—</td><td id="sc-pay-monthly">—</td></tr>
-                <tr><td>YEARS TO BEP (Self-Stake)</td><td id="sc-years-self" colspan="2">—</td></tr>
-                <tr><td>YEARS TO BEP (Delegated)</td><td id="sc-years-del" colspan="2">—</td></tr>
-                <tr><td>STAKE IN — Self (₩)</td><td id="sc-stakein-self-krw" colspan="2">—</td></tr>
-                <tr><td>STAKE IN — Delegated (₩)</td><td id="sc-stakein-del-krw" colspan="2">—</td></tr>
+                <tr><td>YEARS TO BEP</td><td id="sc-years-del" colspan="2">—</td></tr>
+                <tr><td>STAKE-IN VALUE (₩)</td><td id="sc-stakein-del-krw" colspan="2">—</td></tr>
               </tbody>
             </table>
           </div>
@@ -410,6 +414,17 @@
               <thead><tr><th>#</th><th>Partner</th><th class="num">Annual Reward (USD)</th><th class="num">AUM (USD)</th></tr></thead>
               <tbody id="sim-rank-tbody"></tbody>
             </table>
+          </div>
+        </div>
+
+        <!-- Panel 8: Saved Simulations -->
+        <div class="panel" id="sim-saved-panel">
+          <div class="panel-title">
+            Saved Simulations
+            <button class="btn-danger btn-sm" id="btn-clear-sims">Clear All</button>
+          </div>
+          <div id="sim-saved-list">
+            <div class="empty-state">No saved simulations yet. Run a calculation and click "Save Simulation".</div>
           </div>
         </div>
 
@@ -857,16 +872,16 @@
     </section>
   </div>
 
-  <script src="js/data.js?v=20260313a"></script>
-  <script src="js/app.js?v=20260313a"></script>
-  <script src="js/router.js?v=20260313a"></script>
-  <script src="js/potential-partners.js?v=20260313a"></script>
-  <script src="js/simulation.js?v=20260313a"></script>
-  <script src="js/infra-costs.js?v=20260313a"></script>
-  <script src="js/net-revenue.js?v=20260313a"></script>
-  <script src="js/competitors.js?v=20260313a"></script>
-  <script src="js/tokenomics-calc.js?v=20260313a"></script>
-  <script src="js/tokenomics-score.js?v=20260313a"></script>
-  <script src="js/tokenomics.js?v=20260313a"></script>
+  <script src="js/data.js?v=20260313b"></script>
+  <script src="js/app.js?v=20260313b"></script>
+  <script src="js/router.js?v=20260313b"></script>
+  <script src="js/potential-partners.js?v=20260313b"></script>
+  <script src="js/simulation.js?v=20260313b"></script>
+  <script src="js/infra-costs.js?v=20260313b"></script>
+  <script src="js/net-revenue.js?v=20260313b"></script>
+  <script src="js/competitors.js?v=20260313b"></script>
+  <script src="js/tokenomics-calc.js?v=20260313b"></script>
+  <script src="js/tokenomics-score.js?v=20260313b"></script>
+  <script src="js/tokenomics.js?v=20260313b"></script>
 </body>
 </html>

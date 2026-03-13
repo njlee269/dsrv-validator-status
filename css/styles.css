@@ -652,6 +652,8 @@ td .action-btns button { padding: 4px 10px; font-size: 0.66rem; }
 .sim-net-row td:not(:first-child) { font-weight: 800; font-size: 0.88rem; }
 .sim-cost-row td:not(:first-child) { color: var(--red) !important; font-weight: 700; }
 .sim-payment-row td:not(:first-child) { color: var(--green) !important; font-weight: 700; }
+.sim-total-row td { font-weight: 800; color: var(--accent); font-size: 0.9rem; border-top: 2px solid var(--border-light); }
+.sim-net-row.sim-highlight-row td { color: var(--green) !important; }
 .sim-yr-input {
   width: 110px; background: var(--bg-input); border: 1px solid var(--border);
   border-radius: 4px; padding: 5px 8px; font-size: 0.72rem; color: var(--text);

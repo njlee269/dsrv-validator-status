@@ -5,6 +5,7 @@
 (function () {
   var simPrices = null;
   var infraCosts = [];
+  var lastCalc = null;
 
   function fmtUsd(n) {
     if (n == null || isNaN(n)) return "—";
@@ -87,7 +88,7 @@
     var price      = getVal("sim-price");
     var krwRate    = getVal("sim-krw-rate");
     var selfStake  = getVal("sim-self-stake");
-    var deleg      = getVal("sim-delegation");
+    var extDeleg   = getVal("sim-delegation");
     var apr        = getVal("sim-apr");
     var comm       = getVal("sim-commission");
     var opMonthly  = getOpCost();
@@ -95,56 +96,57 @@
     var payMonthly = getVal("sim-op-payment");
     var payAnnual  = payMonthly != null ? payMonthly * 12 : null;
     var simName    = (document.getElementById("sim-name") ? document.getElementById("sim-name").value.trim() : "") || "Simulated";
+    var simToken   = (document.getElementById("sim-token") ? document.getElementById("sim-token").value.trim() : "") || "";
 
     var opEl = document.getElementById("sim-op-cost");
     if (opEl && !opEl.value && opMonthly != null) opEl.placeholder = "Auto: $" + opMonthly + "/mo";
+
+    // Combined total delegation = self-stake + partner delegation
+    var totalDeleg = null;
+    if (selfStake != null || extDeleg != null) {
+      totalDeleg = (selfStake || 0) + (extDeleg || 0);
+    }
 
     function annualRev(d) {
       if (d == null || price == null || apr == null || comm == null) return null;
       return d * price * (apr / 100) * (comm / 100);
     }
 
-    var selfRev = annualRev(selfStake);
-    var delRev  = annualRev(deleg);
-    var selfRevKrw = (selfRev != null && krwRate != null) ? selfRev * krwRate : null;
-    var delRevKrw  = (delRev  != null && krwRate != null) ? delRev  * krwRate : null;
-    var selfNet = (selfRev != null && opAnnual != null) ? selfRev - opAnnual : null;
-    var delNet  = (delRev  != null && opAnnual != null) ? delRev  - opAnnual : null;
-    var selfAum = (selfStake != null && price != null) ? selfStake * price : null;
-    var delAum  = (deleg    != null && price != null) ? deleg    * price : null;
-    var selfMo  = selfRev != null ? selfRev / 12 : null;
-    var delMo   = delRev  != null ? delRev  / 12 : null;
-    var selfMoNet = (selfMo != null && opMonthly != null) ? selfMo - opMonthly : null;
-    var delMoNet  = (delMo  != null && opMonthly != null) ? delMo  - opMonthly : null;
-    var selfStakeKrw = (selfAum != null && krwRate != null) ? selfAum * krwRate : null;
-    var delStakeKrw  = (delAum  != null && krwRate != null) ? delAum  * krwRate : null;
-    var addToken = (selfStake != null && deleg != null) ? deleg - selfStake : null;
-    var addRev   = (selfRev != null && delRev != null) ? delRev - selfRev : null;
-    var addRevKrw = (addRev != null && krwRate != null) ? addRev * krwRate : null;
-    var addAum   = (selfAum != null && delAum != null) ? delAum - selfAum : null;
+    var totalRev    = annualRev(totalDeleg);
+    var totalRevKrw = (totalRev  != null && krwRate != null) ? totalRev  * krwRate : null;
+    var totalNet    = (totalRev  != null && opAnnual != null) ? totalRev  - opAnnual : null;
+    var totalNetKrw = (totalNet  != null && krwRate != null) ? totalNet  * krwRate : null;
+    var totalMo     = totalRev   != null ? totalRev  / 12 : null;
+    var totalMoNet  = (totalMo   != null && opMonthly != null) ? totalMo - opMonthly : null;
+    var totalAum    = (totalDeleg != null && price != null) ? totalDeleg * price : null;
+    var selfAum     = (selfStake != null && price != null) ? selfStake * price : null;
+    var selfStakeKrw = (selfAum  != null && krwRate != null) ? selfAum * krwRate : null;
 
-    setText("sc-self-deleg", fmtTokens(selfStake));
-    setText("sc-del-deleg",  fmtTokens(deleg));
-    setText("sc-self-apr",   fmtPct(apr));
-    setText("sc-del-apr",    fmtPct(apr));
-    setText("sc-self-comm",  fmtPct(comm));
-    setText("sc-del-comm",   fmtPct(comm));
-    setText("sc-self-price", fmtPrice(price));
-    setText("sc-del-price",  fmtPrice(price));
-    setText("sc-self-rev-usd", fmtUsd(selfRev));
-    setText("sc-del-rev-usd",  fmtUsd(delRev));
-    setText("sc-self-rev-krw", fmtKrw(selfRevKrw));
-    setText("sc-del-rev-krw",  fmtKrw(delRevKrw));
-    setText("sc-self-net", selfNet != null ? fmtUsd(selfNet) : "—");
-    setText("sc-del-net",  delNet  != null ? fmtUsd(delNet)  : "—");
-    setColor("sc-self-net", selfNet); setColor("sc-del-net", delNet);
-    setText("sc-self-aum",     fmtUsd(selfAum)); setText("sc-del-aum",     fmtUsd(delAum));
-    setText("sc-self-mo-usd",  fmtUsd(selfMo));  setText("sc-del-mo-usd",  fmtUsd(delMo));
-    setText("sc-self-mo-net",  selfMoNet != null ? fmtUsd(selfMoNet) : "—");
-    setText("sc-del-mo-net",   delMoNet  != null ? fmtUsd(delMoNet)  : "—");
-    setColor("sc-self-mo-net", selfMoNet); setColor("sc-del-mo-net", delMoNet);
-    setText("sc-self-stake-usd", fmtUsd(selfAum)); setText("sc-del-stake-usd", fmtUsd(delAum));
-    setText("sc-self-stake-krw", fmtKrw(selfStakeKrw)); setText("sc-del-stake-krw", fmtKrw(delStakeKrw));
+    // Upside: delegation contribution vs self-only
+    var selfOnlyRev = annualRev(selfStake);
+    var addRev      = (totalRev != null && selfOnlyRev != null) ? totalRev - selfOnlyRev : null;
+    var addRevKrw   = (addRev   != null && krwRate != null) ? addRev * krwRate : null;
+    var addToken    = (selfStake != null && extDeleg != null) ? extDeleg : null;
+    var addAum      = (totalAum  != null && selfAum  != null) ? totalAum - selfAum : null;
+
+    setText("sc-self-deleg",  fmtTokens(selfStake));
+    setText("sc-ext-deleg",   fmtTokens(extDeleg));
+    setText("sc-total-deleg", fmtTokens(totalDeleg));
+    setText("sc-price",       fmtPrice(price));
+    setText("sc-apr",         fmtPct(apr));
+    setText("sc-comm",        fmtPct(comm));
+    setText("sc-rev-usd",     fmtUsd(totalRev));
+    setText("sc-rev-krw",     fmtKrw(totalRevKrw));
+    setText("sc-net-usd",     totalNet != null ? fmtUsd(totalNet) : "—");
+    setText("sc-net-krw",     totalNetKrw != null ? fmtKrw(totalNetKrw) : "—");
+    setColor("sc-net-usd",    totalNet);
+    setColor("sc-net-krw",    totalNet);
+    setText("sc-mo-usd",      fmtUsd(totalMo));
+    setText("sc-mo-net",      totalMoNet != null ? fmtUsd(totalMoNet) : "—");
+    setColor("sc-mo-net",     totalMoNet);
+    setText("sc-aum",         fmtUsd(totalAum));
+    setText("sc-stake-usd",   fmtUsd(selfAum));
+    setText("sc-stake-krw",   fmtKrw(selfStakeKrw));
 
     setText("sc-add-token",   fmtTokens(addToken));
     setText("sc-add-rev-usd", fmtUsd(addRev));
@@ -160,21 +162,26 @@
     if (pyAEl) { pyAEl.textContent = payAnnual != null ? fmtUsd(payAnnual) : "—"; pyAEl.style.color = "var(--green)"; }
     if (pyMEl) { pyMEl.textContent = payMonthly != null ? fmtUsd(payMonthly) : "—"; pyMEl.style.color = "var(--green)"; }
 
-    var yearsSelf = (selfAum != null && selfNet != null && selfNet > 0) ? selfAum / selfNet : null;
-    var yearsDel  = (delAum  != null && delNet  != null && delNet  > 0) ? delAum  / delNet  : null;
-    setText("sc-years-self", yearsSelf != null ? yearsSelf.toFixed(2) + " yrs" : (selfNet != null && selfNet <= 0 ? "N/A (negative net)" : "—"));
-    setText("sc-years-del",  yearsDel  != null ? yearsDel.toFixed(2)  + " yrs" : (delNet  != null && delNet  <= 0 ? "N/A (negative net)" : "—"));
-    setText("sc-stakein-self-krw", fmtKrw(selfStakeKrw));
-    setText("sc-stakein-del-krw",  fmtKrw(delStakeKrw));
+    var yearsDel = (totalAum != null && totalNet != null && totalNet > 0) ? totalAum / totalNet : null;
+    setText("sc-years-del", yearsDel != null ? yearsDel.toFixed(2) + " yrs" : (totalNet != null && totalNet <= 0 ? "N/A (negative)" : "—"));
+    setText("sc-stakein-del-krw", fmtKrw(selfStakeKrw));
 
     document.getElementById("sim-results-panel").style.display = "";
     document.getElementById("sim-additional-panel").style.display = addToken != null ? "" : "none";
     document.getElementById("sim-opex-panel").style.display = "";
     document.getElementById("sim-projection-panel").style.display = "";
 
-    updateProjection(deleg, apr, comm, opMonthly, krwRate);
-    renderBep(deleg, price, apr, comm, opAnnual);
-    renderRanking(delRev, delAum, simName);
+    // Store last calc for saving
+    lastCalc = {
+      name: simName, token: simToken, price: price, apr: apr, comm: comm,
+      selfStake: selfStake, extDeleg: extDeleg, totalDeleg: totalDeleg,
+      annualRev: totalRev, netAnnualRev: totalNet, opMonthly: opMonthly,
+      krwRate: krwRate, date: new Date().toISOString(),
+    };
+
+    updateProjection(totalDeleg, apr, comm, opMonthly, krwRate);
+    renderBep(totalDeleg, price, apr, comm, opAnnual);
+    renderRanking(totalRev, totalAum, simName);
   }
 
   function updateProjection(deleg, apr, comm, opMonthly, krwRate) {
@@ -361,6 +368,54 @@
     });
   }
 
+  function saveSimulation() {
+    if (!lastCalc) { alert("Run a calculation first."); return; }
+    var saves = JSON.parse(localStorage.getItem("dsrv_sim_saves") || "[]");
+    saves.unshift({ ...lastCalc, id: Date.now() });
+    if (saves.length > 50) saves = saves.slice(0, 50);
+    localStorage.setItem("dsrv_sim_saves", JSON.stringify(saves));
+    renderSavedSims();
+    var btn = document.getElementById("btn-save-sim");
+    if (btn) { btn.textContent = "Saved ✓"; setTimeout(function() { btn.textContent = "Save Simulation"; }, 1500); }
+  }
+
+  function renderSavedSims() {
+    var el = document.getElementById("sim-saved-list");
+    if (!el) return;
+    var saves = JSON.parse(localStorage.getItem("dsrv_sim_saves") || "[]");
+    if (!saves.length) {
+      el.innerHTML = '<div class="empty-state">No saved simulations yet. Run a calculation and click "Save Simulation".</div>';
+      return;
+    }
+    var html = '<div class="table-wrap"><table><thead><tr>' +
+      '<th>Chain</th><th>Token</th><th class="num">Total Deleg</th>' +
+      '<th class="num">Annual Rev</th><th class="num">Net Annual Rev</th>' +
+      '<th class="num">Price</th><th>APR / Comm</th><th>Date</th><th></th>' +
+      '</tr></thead><tbody>';
+    saves.forEach(function(s) {
+      html += '<tr>' +
+        '<td><strong>' + escHtml(s.name) + '</strong></td>' +
+        '<td style="color:var(--text-dim)">' + escHtml(s.token) + '</td>' +
+        '<td class="num">' + (s.totalDeleg != null ? fmtTokens(s.totalDeleg) : "—") + '</td>' +
+        '<td class="num" style="color:var(--accent);font-weight:600">' + fmtUsd(s.annualRev) + '</td>' +
+        '<td class="num" style="font-weight:600;color:' + (s.netAnnualRev != null ? (s.netAnnualRev >= 0 ? "var(--green)" : "var(--red)") : "inherit") + '">' + (s.netAnnualRev != null ? fmtUsd(s.netAnnualRev) : "—") + '</td>' +
+        '<td class="num" style="color:var(--text-dim)">' + (s.price != null ? fmtPrice(s.price) : "—") + '</td>' +
+        '<td style="color:var(--text-dim);font-size:0.72rem">' + (s.apr != null ? s.apr + "% / " + (s.comm || 0) + "%" : "—") + '</td>' +
+        '<td style="color:var(--text-muted);font-size:0.7rem">' + (s.date ? s.date.slice(0,10) : "—") + '</td>' +
+        '<td><button class="btn-danger btn-sm" onclick="simDeleteSave(' + s.id + ')">×</button></td>' +
+        '</tr>';
+    });
+    html += '</tbody></table></div>';
+    el.innerHTML = html;
+  }
+
+  window.simDeleteSave = function(id) {
+    var saves = JSON.parse(localStorage.getItem("dsrv_sim_saves") || "[]");
+    saves = saves.filter(function(s) { return s.id !== id; });
+    localStorage.setItem("dsrv_sim_saves", JSON.stringify(saves));
+    renderSavedSims();
+  };
+
   function setup() {
     document.getElementById("btn-sim-calc") && document.getElementById("btn-sim-calc").addEventListener("click", calculate);
     setupSearch();
@@ -386,6 +441,11 @@
         var krwEl = document.getElementById("sim-krw-rate");
         if (krwEl && !krwEl.value && data.krw && data.usd) krwEl.value = Math.round(data.krw / data.usd);
       }
+    });
+
+    document.getElementById("btn-save-sim") && document.getElementById("btn-save-sim").addEventListener("click", saveSimulation);
+    document.getElementById("btn-clear-sims") && document.getElementById("btn-clear-sims").addEventListener("click", function() {
+      if (confirm("Clear all saved simulations?")) { localStorage.removeItem("dsrv_sim_saves"); renderSavedSims(); }
     });
 
     document.getElementById("btn-sim-reset") && document.getElementById("btn-sim-reset").addEventListener("click", function () {
@@ -441,6 +501,7 @@
         } catch (e) { simPrices = {}; }
       }
     }
+    renderSavedSims();
   }
 
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", init);
