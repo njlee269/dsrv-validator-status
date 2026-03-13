@@ -188,6 +188,41 @@ async function findDlSlug(name, symbol, geckoId) {
 }
 
 /* ═══════════════════════════════════════
+   Messari API — token allocations + unlock schedules
+   ═══════════════════════════════════════ */
+
+const MESSARI_KEY  = process.env.MESSARI_API_KEY || "5YHeI3BsUoqkt65FET-R2xIqR-xb2NVAj9hqCYyI6poe-NIq";
+const MESSARI_BASE = "https://data.messari.io/api";
+
+async function messariProfile(slug) {
+  if (!MESSARI_KEY || !slug) return null;
+  try {
+    return await cachedFetch(
+      `messari:profile:${slug}`,
+      `${MESSARI_BASE}/v2/assets/${encodeURIComponent(slug)}/profile`,
+      { "x-messari-api-key": MESSARI_KEY }
+    );
+  } catch { return null; }
+}
+
+async function messariMetrics(slug) {
+  if (!MESSARI_KEY || !slug) return null;
+  try {
+    return await cachedFetch(
+      `messari:metrics:${slug}`,
+      `${MESSARI_BASE}/v1/assets/${encodeURIComponent(slug)}/metrics`,
+      { "x-messari-api-key": MESSARI_KEY }
+    );
+  } catch { return null; }
+}
+
+// Messari uses lowercase name or symbol as slug (e.g. "ethereum", "sui")
+function messariSlug(name, symbol) {
+  // Try name first (most reliable), then symbol
+  return (name || "").toLowerCase().replace(/\s+/g, "-");
+}
+
+/* ═══════════════════════════════════════
    CoinMarketCap API (optional, needs CMC_API_KEY env)
    ═══════════════════════════════════════ */
 
@@ -328,9 +363,12 @@ app.get("/api/tokenomics/coin/:id", async (req, res) => {
     const name = cgRaw.name || "";
     const symbol = (cgRaw.symbol || "").toUpperCase();
 
-    const [dlMatch, cmcData] = await Promise.all([
+    const mSlug = messariSlug(name, symbol);
+    const [dlMatch, cmcData, msProfile, msMetrics] = await Promise.all([
       findDlSlug(name, symbol, id),
       cmcQuote(symbol),
+      messariProfile(mSlug),
+      messariMetrics(mSlug),
     ]);
 
     let dlData = null, dlFeesData = null, dlRevData = null;
@@ -402,32 +440,77 @@ app.get("/api/tokenomics/coin/:id", async (req, res) => {
         priceChange7d: srcRef(md.price_change_percentage_7d, "coingecko", cgUrl, "price_change_7d"),
         priceChange30d: srcRef(md.price_change_percentage_30d, "coingecko", cgUrl, "price_change_30d"),
       },
-      allocations: {
-        teamPct: srcRef(null, "coingecko", cgUrl, "team_allocation"),
-        investorPct: srcRef(null, "coingecko", cgUrl, "investor_allocation"),
-        foundationPct: srcRef(null, "coingecko", cgUrl, "foundation_allocation"),
-        communityPct: srcRef(null, "coingecko", cgUrl, "community_allocation"),
-        airdropPct: srcRef(null, "coingecko", cgUrl, "airdrop_allocation"),
-      },
-      unlocks: {
-        nextUnlockAmount: srcRef(null, "none", null, "next_unlock_amount"),
-        nextUnlockDate: srcRef(null, "none", null, "next_unlock_date"),
-        tokens12mEstimate: srcRef(null, "none", null, "12m_unlock_estimate"),
-      },
+      allocations: (function () {
+        const msUrl = `https://messari.io/asset/${mSlug}`;
+        const dist  = msProfile?.data?.profile?.economics?.token_distribution?.initial_distribution ?? null;
+        const economy = msProfile?.data?.profile?.economics ?? null;
+
+        // Messari field names vary — try multiple paths
+        const teamPct   = dist?.team_allocation_percentage  ?? dist?.team_percentage       ?? null;
+        const invPct    = dist?.investors_percentage         ?? dist?.investor_percentage    ?? null;
+        const foundPct  = dist?.foundation_allocation_percentage ?? dist?.foundation_percentage ?? null;
+        const commPct   = dist?.community_percentage         ?? dist?.ecosystem_fund_percentage ?? null;
+        const airdropPct= dist?.airdrop_percentage           ?? null;
+        const publicPct = dist?.public_sale_percentage       ?? null;
+
+        return {
+          teamPct:       srcRef(teamPct,    teamPct    != null ? "messari" : "none", teamPct    != null ? msUrl : null, "team_allocation"),
+          investorPct:   srcRef(invPct,     invPct     != null ? "messari" : "none", invPct     != null ? msUrl : null, "investor_allocation"),
+          foundationPct: srcRef(foundPct,   foundPct   != null ? "messari" : "none", foundPct   != null ? msUrl : null, "foundation_allocation"),
+          communityPct:  srcRef(commPct,    commPct    != null ? "messari" : "none", commPct    != null ? msUrl : null, "community_allocation"),
+          airdropPct:    srcRef(airdropPct, airdropPct != null ? "messari" : "none", airdropPct != null ? msUrl : null, "airdrop_allocation"),
+          publicSalePct: srcRef(publicPct,  publicPct  != null ? "messari" : "none", publicPct  != null ? msUrl : null, "public_sale"),
+          description:   dist?.description ?? economy?.launch_details?.description ?? null,
+        };
+      })(),
+      unlocks: (function () {
+        const msUrl  = `https://messari.io/asset/${mSlug}`;
+        const supply = msMetrics?.data?.supply ?? null;
+        const dist   = msProfile?.data?.profile?.economics?.token_distribution ?? null;
+
+        // Annual inflation % → rough 12M unlock estimate as % of circulating supply
+        const annualInflation = supply?.annual_inflation_percent ?? null;
+        const circSupply      = md.circulating_supply ?? null;
+        const tokens12m       = (annualInflation != null && circSupply != null)
+          ? circSupply * (annualInflation / 100)
+          : null;
+
+        const supplyCurveDetails = dist?.supply_curve_details ?? null;
+
+        return {
+          tokens12mEstimate: srcRef(tokens12m, tokens12m != null ? "messari" : "none", tokens12m != null ? msUrl : null, "12m_unlock_estimate"),
+          annualInflationPct: srcRef(annualInflation, annualInflation != null ? "messari" : "none", annualInflation != null ? msUrl : null, "annual_inflation"),
+          vestingDescription: supplyCurveDetails ?? null,
+          launchStyle: msProfile?.data?.profile?.economics?.launch_style ?? null,
+        };
+      })(),
       fundamentals: {
         tvl: srcRef(currentDlTvl, "defillama", dlUrl, "tvl"),
         protocolFees: srcRef(dailyFees, "defillama", dlUrl, "protocol_fees_24h"),
         revenue: srcRef(dailyRevenue, "defillama", dlUrl, "revenue_24h"),
       },
-      utility: {
-        gas: false, staking: false, governance: false, feeShare: false,
-        burn: false, buyback: false, collateral: false, mandatoryUse: false,
-        validatorSecurity: false,
-      },
+      utility: (function () {
+        const usage = (msProfile?.data?.profile?.economics?.token_usage ?? "").toLowerCase();
+        const tech  = (msProfile?.data?.profile?.technology?.technology_details ?? "").toLowerCase();
+        const combined = usage + " " + tech;
+        return {
+          gas:               combined.includes("gas") || combined.includes("transaction fee"),
+          staking:           combined.includes("stak"),
+          governance:        combined.includes("govern") || combined.includes("voting"),
+          feeShare:          combined.includes("fee") && combined.includes("shar"),
+          burn:              combined.includes("burn"),
+          buyback:           combined.includes("buyback") || combined.includes("buy back"),
+          collateral:        combined.includes("collateral"),
+          mandatoryUse:      combined.includes("required") || combined.includes("mandatory"),
+          validatorSecurity: combined.includes("validator") || combined.includes("bond"),
+          rawDescription:    msProfile?.data?.profile?.economics?.token_usage ?? null,
+        };
+      })(),
       sources: {
-        coingecko: true,
-        defillama: !!dlMatch,
+        coingecko:    true,
+        defillama:    !!dlMatch,
         coinmarketcap: !!cmcQuoteData,
+        messari:      !!msProfile?.data,
       },
       supplyType: md.max_supply != null ? "capped" : (md.total_supply != null ? "dynamic" : "unknown"),
     };
